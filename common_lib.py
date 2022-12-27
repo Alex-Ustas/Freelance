@@ -2,7 +2,7 @@ import winsound
 import time
 
 KEYWORDS = 'excel,exel,эксел,ексел,vba,макрос,xls,csv,visual basic,таблиц,python,питон,power'
-# KEYWORDS = 'рерайт,разраб,excel,exel,эксел,ексел,vba,макрос,xls,csv,visual basic,таблиц,python,питон,power,java'
+# KEYWORDS = 'прог,excel,exel,эксел,ексел,vba,макрос,xls,csv,visual basic,таблиц,python,питон,power'
 
 
 def beep_beep():

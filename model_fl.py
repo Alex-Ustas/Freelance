@@ -16,7 +16,7 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
                  (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0'
             }
         rq = requests.get(href_fl, headers=headers)
-        soup = bs(rq.text, 'lxml')
+        soup = bs(rq.text, 'html.parser')
     else:
         html = open(r'C:\Temp\Python\fl2.html', encoding='utf8').read()
         soup = bs(html, 'lxml')
@@ -48,7 +48,7 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
             if 'По договоренности' in str(price):
                 price = 'По договоренности'
             else:
-                price = bs(price.next.split("'")[1], 'lxml').find('div')
+                price = bs(price.next.split("'")[1], 'html.parser').find('div')
                 curr = price.find('span', class_='d-none')
                 curr = '' if curr == None else curr.next
 
@@ -63,7 +63,7 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
         info = '<Info not defined>'
         if len(scripts) > 0:
             info = scripts[1]
-            info = bs(info.next.split("'")[1], 'lxml').find('div', class_="b-post__txt")
+            info = bs(info.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
             if info == None:
                 info = '<Info not defined>'
             else:
@@ -73,7 +73,7 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
         resp = '<Response not defined>'
         if len(scripts) > 1:
             resp = scripts[2]
-            resp = bs(resp.next.split("'")[1], 'lxml').find('div', class_="b-post__txt")
+            resp = bs(resp.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
             if resp == None:
                 resp = '<Response not defined>'
             else:
@@ -84,7 +84,7 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
         time = '<Time not defined>'
         if len(scripts) > 1:
             time = scripts[2]
-            time = bs(time.next.split("'")[1], 'lxml').find('div', class_="b-post__txt")
+            time = bs(time.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
             if time == None:
                 time = '<Time not defined>'
             else:
