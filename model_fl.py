@@ -5,7 +5,8 @@ from bs4 import BeautifulSoup as bs
 import common_lib as lib
 
 
-def parse_fl(fl_dict: dict, method=1) -> dict:
+def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
+    """Parse fl.ru"""
     beep = True if len(fl_dict) > 0 else False
     data = dict()
     if method == 1:
@@ -19,11 +20,11 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
         soup = bs(rq.text, 'html.parser')
     else:
         html = open(r'C:\Temp\Python\fl2.html', encoding='utf8').read()
-        soup = bs(html, 'lxml')
+        soup = bs(html, 'html.parser')
 
     content = soup.find('div', class_='b-page__lenta')
     # print(content)
-    if content == None:
+    if content is None:
         print(rq.status_code, rq.reason)
         exit()
 
@@ -32,13 +33,13 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
     for ref in tasks:
         # print(ref)
         title = ref.find('a')
-        if title == None:
+        if title is None:
             title = '<Title not defined>'
-            id = '0'
+            task_id = '0'
         else:
-            id = title.get('name')[3:]
-            title = f'{id} {title.next.strip()}'
-            title = lib.mark_words(title)
+            task_id = title.get('name')[3:]
+            title = title.next.strip()
+            # title = lib.mark_words(title)
         # print(title)
 
         scripts = ref.find_all('script')
@@ -50,10 +51,10 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
             else:
                 price = bs(price.next.split("'")[1], 'html.parser').find('div')
                 curr = price.find('span', class_='d-none')
-                curr = '' if curr == None else curr.next
+                curr = '' if curr is None else curr.next
 
                 cost = price.find('a')
-                if cost == None:
+                if cost is None:
                     cost = price.next
                 else:
                     cost = cost.next.next.next.next
@@ -64,56 +65,54 @@ def parse_fl(fl_dict: dict, method=1) -> dict:
         if len(scripts) > 0:
             info = scripts[1]
             info = bs(info.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
-            if info == None:
-                info = '<Info not defined>'
-            else:
-                info = lib.split_sentence(lib.mark_words(info.next.strip()), 120, '\t')
+            info = '<Info not defined>' if info is None else info.next.strip()
         # print(info)
 
         resp = '<Response not defined>'
         if len(scripts) > 1:
             resp = scripts[2]
             resp = bs(resp.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
-            if resp == None:
+            if resp is None:
                 resp = '<Response not defined>'
             else:
-                resp = resp.find('a').next.next
+                resp = resp.find('a').next.next.strip().lower()
         # print('\t' + resp)
-        data[id] = [title, price, info, resp]
+        data[task_id] = [title, price, info, resp]
 
         time = '<Time not defined>'
         if len(scripts) > 1:
             time = scripts[2]
             time = bs(time.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
-            if time == None:
+            if time is None:
                 time = '<Time not defined>'
             else:
                 time = time.find('span', class_='b-post__bold b-layout__txt_inline-block')
-                if time == None:
+                if time is None:
                     time = '<Time not defined>'
                 else:
                     time = str(time.next).strip() + ' ' + str(time.next.next).strip()
         # print('\t' + time)
-        data[id] = [title, price, info, resp, time]
+        data[task_id] = [title, price, info, resp, time]
 
     # Check new projects
     new_task = False
-    for key, datalist in data.items():
+    for key, data_list in data.items():
         if key not in fl_dict.keys():
-            fl_dict[key] = datalist
+            fl_dict[key] = data_list
             for word in lib.KEYWORDS.split(','):
-                if word in datalist[0] or word in datalist[2]:
-                    print('\033[1m\033[32m{}\033[0m'.format('FL.ru:'), datalist[0])
-                    print(datalist[2])
-                    print('\t' + datalist[1])
-                    print('\t' + datalist[3])
-                    print('\t' + datalist[4])
+                if word in data_list[0].lower() or word in data_list[2].lower():
+                    # print('\033[1m\033[32m{}\033[0m'.format('FL.ru:'), data_list[0])
+                    # print(data_list[2])
+                    # print('\t' + data_list[1])
+                    # print('\t' + data_list[3])
+                    # print('\t' + data_list[4])
                     new_task = True
+                    new_tasks[key] = ['FL.ru', data_list[0], data_list[2], data_list[1], data_list[4], data_list[3], '']
 
     if beep and new_task:
         lib.beep_beep()
-    return fl_dict
+    return fl_dict, new_tasks
 
 
 if __name__ == '__main__':
-    dummy = parse_fl(dict(), 0)
+    dummy = parse_fl(dict(), dict(), 0)

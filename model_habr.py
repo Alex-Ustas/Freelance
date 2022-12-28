@@ -6,14 +6,18 @@ import html2text as ht
 
 
 # ------------------------------------------------------------------------------------------- Habr freelance
-def parse_task_habr(text: str):
+def parse_task_habr(text: str) -> (str, str):
     n1 = text.find('[')
     n2 = text.find(']')
+    temp = text.split('/tasks/')
+    task_id = '0'
+    if len(temp) > 1:
+        task_id = temp[len(temp)-1][:-1]
     task = '[Task not detected]' if n1 == 0 or n2 == 0 else text[n1 + 1:n2].strip()
-    return task
+    return task, task_id
 
 
-def parse_response_habr(text):
+def parse_response_habr(text: str):
     nums = text.split('_')
     selected = True
     ago = list()
@@ -37,12 +41,17 @@ def parse_response_habr(text):
         return 0, 0, text.strip()
 
 
-def habr_free(dict1):
-    s = rq.get('https://freelance.habr.com/tasks')
-    text = ht.html2text(s.text)
-    text = text.split('\n')
+def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
+    """Parse habr.com"""
     keyword = lib.KEYWORDS.split(',')
-    beep = True if len(dict1.keys()) > 0 else False
+    beep = True if len(habr_dict.keys()) > 0 else False
+    if method == 1:
+        s = rq.get('https://freelance.habr.com/tasks')
+        text = ht.html2text(s.text)
+    else:
+        html = open(r'C:\Temp\Python\habr_html.txt', encoding='utf8').read()
+        text = ht.html2text(html)
+    text = text.split('\n')
 
     # Generate dictionary
     nchar = 0
@@ -56,9 +65,9 @@ def habr_free(dict1):
         if stop:
             break
 
-        task = parse_task_habr(text[nchar])
-        newtask = dict1.get(task, '_New_')
-        newtask = True if newtask == '_New_' else False
+        task, task_id = parse_task_habr(text[nchar])
+        new_task = habr_dict.get(task_id, '_New_')
+        new_task = True if new_task == '_New_' else False
         response, view, ago = parse_response_habr(text[nchar + 2])
         nchar += 3
 
@@ -69,23 +78,29 @@ def habr_free(dict1):
             cash = cash[0:cash.find('руб.')].replace(' ', '')
         else:
             cash = 'договорная'
-        dict1[task] = [newtask, response, view, ago, cash]
+        habr_dict[task_id] = [task, new_task, response, view, ago, cash]
 
     # Check new projects
-    newtask = False
-    for key, datalist in dict1.items():
+    new_task = False
+    for key, data_list in habr_dict.items():
         for word in keyword:
-            if word in key.lower():
-                if datalist[0]:
-                    print('\033[1m\033[33m{}\033[0m'.format('Хабр:'), lib.mark_words(key))
-                    if datalist[4] == 'договорная':
-                        print(f'\tОткликов: {datalist[1]}, просмотров {datalist[2]}, {datalist[3]}, оплата: договорная')
-                    else:
-                        print(f'\tОткликов: {datalist[1]}, просмотров {datalist[2]}, {datalist[3]}, оплата:',
-                              "{:,.0f}".format(int(datalist[4])))
-                    newtask = True
+            if word in data_list[0].lower():
+                if data_list[1]:
+                    # print('\033[1m\033[33m{}\033[0m'.format('Хабр:'), key, lib.mark_words(data_list[0]))
+                    # if data_list[5] == 'договорная':
+                    #     print(f'\tОткликов: {data_list[2]}, просмотров {data_list[3]}, {data_list[4]}, оплата: договорная')
+                    # else:
+                    #     print(f'\tОткликов: {data_list[2]}, просмотров {data_list[3]}, {data_list[4]}, оплата:',
+                    #           "{:,.0f}".format(int(data_list[5])))
+                    new_tasks[key] = ['Habr', data_list[0], '', data_list[5], data_list[4], str(data_list[2]), '']
+                    new_task = True
                 break
-    if beep and newtask:
+
+    if beep and new_task:
         lib.beep_beep()
 
-    return dict1
+    return habr_dict, new_tasks
+
+
+if __name__ == '__main__':
+    dummy = parse_habr(dict(), dict(), 0)
