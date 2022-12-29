@@ -24,7 +24,7 @@ def execute():
         if int(i) % 5 == 0 and i - int(i) == 0:
             print(int(i), 'мин.')
         i += 0.5
-        time.sleep(5)
+        time.sleep(30)
         new_tasks = dict()
 
 

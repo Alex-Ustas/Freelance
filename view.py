@@ -53,15 +53,15 @@ def show_tasks(tasks: dict):
         # print(key, data)
         title = data[0]
         if title == 'Habr':
-            title = colored_text(title + ':', 'yellow')
-        if title == 'FL.ru':
+            title = colored_text(title + ':', 'violet')
+        elif title == 'FL.ru':
             title = colored_text(title + ':', 'green')
         title += ' ' + key + ' ' + mark_words(data[1])
         print(title)
         if data[2]:
             print(split_sentence(mark_words(data[2]), 120, '\t'))
         if data[3]:
-            print(f'\tЦена: {data[3]}')
+            print(f'\tСтоимость: {data[3]}')
         if data[4]:
             print(f'\t{data[4]}')
         if data[5]:

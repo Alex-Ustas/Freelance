@@ -86,13 +86,8 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         for word in keyword:
             if word in data_list[0].lower():
                 if data_list[1]:
-                    # print('\033[1m\033[33m{}\033[0m'.format('Хабр:'), key, lib.mark_words(data_list[0]))
-                    # if data_list[5] == 'договорная':
-                    #     print(f'\tОткликов: {data_list[2]}, просмотров {data_list[3]}, {data_list[4]}, оплата: договорная')
-                    # else:
-                    #     print(f'\tОткликов: {data_list[2]}, просмотров {data_list[3]}, {data_list[4]}, оплата:',
-                    #           "{:,.0f}".format(int(data_list[5])))
-                    new_tasks[key] = ['Habr', data_list[0], '', data_list[5], data_list[4], str(data_list[2]), '']
+                    cost = 'договорная' if data_list[5] == 'договорная' else "{:,.0f}".format(int(data_list[5]))
+                    new_tasks[key] = ['Habr', data_list[0], '', cost, data_list[4], str(data_list[2]), '']
                     new_task = True
                 break
 

@@ -55,9 +55,11 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
 
                 cost = price.find('a')
                 if cost is None:
-                    cost = price.next
+                    cost = str(price.next).strip()
                 else:
-                    cost = cost.next.next.next.next
+                    cost = str(cost.next.next.next.next).strip()
+                if cost.isdigit():
+                    cost = '{:,.0f}'.format(int(cost))
                 price = (cost + curr).strip()
         # print('\t' + price)
 
@@ -101,11 +103,6 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             fl_dict[key] = data_list
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[2].lower():
-                    # print('\033[1m\033[32m{}\033[0m'.format('FL.ru:'), data_list[0])
-                    # print(data_list[2])
-                    # print('\t' + data_list[1])
-                    # print('\t' + data_list[3])
-                    # print('\t' + data_list[4])
                     new_task = True
                     new_tasks[key] = ['FL.ru', data_list[0], data_list[2], data_list[1], data_list[4], data_list[3], '']
 
