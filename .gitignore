@@ -11,6 +11,7 @@ ex0*.spec
 *.user
 *.userosscache
 *.sln.docstates
+bot_token.py
 
 # Python build & dist files
 build/
