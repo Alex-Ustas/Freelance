@@ -13,14 +13,17 @@ def colored_text(text: str, color: str) -> str:
     return f'\033[1m\033[{colors[color]}m{text}\033[0m'
 
 
-def mark_words(exp: str, keyword=lib.KEYWORDS) -> str:
-    """Mark keywords in sentence by yellow color"""
+def mark_words(exp: str, msg_type='terminal', keyword=lib.KEYWORDS) -> str:
+    """Mark keywords in sentence by specified color or bold for msg_type=bot"""
     keyword = keyword.split(',')
     for word in keyword:
         if word in exp.lower():
             pos = exp.lower().find(word)
             cut = exp[pos:pos + len(word)]
-            exp = exp.replace(cut, colored_text(cut, 'yellow'))
+            if msg_type == 'bot':
+                exp = exp.replace(cut, '*' + cut + '*')
+            else:
+                exp = exp.replace(cut, colored_text(cut, 'yellow'))
     return exp
 
 
@@ -50,7 +53,6 @@ def split_sentence(text: str, length: int, start_with='') -> str:
 def show_tasks(tasks: dict):
     """Show detailed info regarding every task"""
     for key, data in tasks.items():
-        # print(key, data)
         title = data[0]
         if title == 'Habr':
             title = colored_text(title + ':', 'violet')
@@ -68,3 +70,21 @@ def show_tasks(tasks: dict):
             print(f'\tОткликов: {data[5]}')
         if data[6]:
             print(f'\t{data[6]}')
+
+
+def show_for_bot(bot, message, tasks: dict):
+    msg = f'Число новых задач: *{len(tasks)}*\n'
+    for key, data in tasks.items():
+        msg += '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
+        msg += '-' * 60 + '\n'
+        if data[2]:
+            msg += mark_words(data[2], 'bot') + '\n'
+        if data[3]:
+            msg += f'Стоимость: *{data[3]}*\n'
+        if data[4]:
+            msg += f'{data[4]}\n'
+        if data[5]:
+            msg += f'Откликов: {data[5]}\n'
+        if data[6]:
+            msg += data[6]
+        bot.send_message(message.chat.id, msg, parse_mode='Markdown')

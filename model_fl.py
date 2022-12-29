@@ -51,7 +51,7 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             else:
                 price = bs(price.next.split("'")[1], 'html.parser').find('div')
                 curr = price.find('span', class_='d-none')
-                curr = '' if curr is None else curr.next
+                curr = '' if curr is None else curr.next.strip()
 
                 cost = price.find('a')
                 if cost is None:
@@ -60,7 +60,7 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
                     cost = str(cost.next.next.next.next).strip()
                 if cost.isdigit():
                     cost = '{:,.0f}'.format(int(cost))
-                price = (cost + curr).strip()
+                price = cost + ' ' + curr
         # print('\t' + price)
 
         info = '<Info not defined>'
