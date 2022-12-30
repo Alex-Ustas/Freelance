@@ -73,9 +73,9 @@ def show_tasks(tasks: dict):
 
 
 def show_for_bot(bot, message, tasks: dict):
-    msg = f'Число новых задач: *{len(tasks)}*\n'
+    bot.send_message(message.chat.id, f'Число новых задач: *{len(tasks)}*\n', parse_mode='Markdown')
     for key, data in tasks.items():
-        msg += '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
+        msg = '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
         msg += '-' * 60 + '\n'
         if data[2]:
             msg += mark_words(data[2], 'bot') + '\n'

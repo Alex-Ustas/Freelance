@@ -1,11 +1,13 @@
 import time
 import view
+import history
 import model_fl as fl
 import model_habr as habr
 import common_lib as lib
 
 import telebot
 import bot_token
+from telebot import types
 # Name: AlexFreelance
 # Bot name: alex_freelance_bot
 
@@ -17,12 +19,20 @@ description = """
 ключевым словам.
 Список ключевых слов: [/keywords]
 Запустить поиск задач: [/go]
+Можно просмотреть последние
+5 задач: [/history]
 Эта справка: [/help]"""
 
 
 @bot.message_handler(commands=['start', 'help'])
 def bot_description(message):
-    bot.send_message(message.chat.id, description, parse_mode='Markdown')
+    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+    itembtn1 = types.KeyboardButton('/help')
+    itembtn2 = types.KeyboardButton('/go')
+    itembtn3 = types.KeyboardButton('/keywords')
+    itembtn4 = types.KeyboardButton('/history')
+    markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
+    bot.send_message(message.chat.id, description, parse_mode='Markdown', reply_markup=markup)
 
 
 @bot.message_handler(commands=['keywords'])
@@ -32,7 +42,7 @@ def bot_description(message):
 
 
 @bot.message_handler(commands=['go'])
-def bot_description(message):
+def run_parser(message):
     new_tasks = dict()
     # 0 - id (key)
     # 0 - service (fl, kwork, habr)
@@ -51,6 +61,7 @@ def bot_description(message):
         if len(new_tasks):
             view.show_tasks(new_tasks)
             view.show_for_bot(bot, message, new_tasks)
+            history.write_records(new_tasks)
         if int(i) % 5 == 0 and i - int(i) == 0:
             print(int(i), 'мин.')
         i += 0.5
@@ -58,4 +69,9 @@ def bot_description(message):
         new_tasks = dict()
 
 
-bot.polling(non_stop=True)
+@bot.message_handler(commands=['history'])
+def get_history(message):
+    bot.send_message(message.chat.id, 'Последние 5 задач:')
+
+
+bot.infinity_polling()
