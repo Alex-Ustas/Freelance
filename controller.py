@@ -44,7 +44,7 @@ def bot_description(message):
 @bot.message_handler(commands=['go'])
 def run_parser(message):
     new_tasks = dict()
-    # 0 - id (key)
+    # - - id (key)
     # 0 - service (fl, kwork, habr)
     # 1 - task name
     # 2 - detail description
@@ -61,7 +61,7 @@ def run_parser(message):
         if len(new_tasks):
             view.show_tasks(new_tasks)
             view.show_for_bot(bot, message, new_tasks)
-            history.write_records(new_tasks)
+            history.write_tasks(new_tasks)
         if int(i) % 5 == 0 and i - int(i) == 0:
             print(int(i), 'мин.')
         i += 0.5
@@ -71,7 +71,9 @@ def run_parser(message):
 
 @bot.message_handler(commands=['history'])
 def get_history(message):
-    bot.send_message(message.chat.id, 'Последние 5 задач:')
+    tasks = history.get_history(5)
+    bot.send_message(message.chat.id, f'Последние *{len(tasks)}* задач:', parse_mode='Markdown')
+    view.show_for_bot(bot, message, tasks)
 
 
 bot.infinity_polling()
