@@ -21,6 +21,11 @@ description = """
 Запустить поиск задач: [/go]
 Можно просмотреть последние
 5 задач: [/history]
+Сайты:
+[https://www.fl.ru/projects/](FL)
+[https://freelance.habr.com/tasks](Habr)
+[https://kwork.ru/projects](Kwork)
+[https://freelance.ru/project/search](Freelance)
 Эта справка: [/help]"""
 
 
@@ -36,7 +41,7 @@ def bot_description(message):
 
 
 @bot.message_handler(commands=['keywords'])
-def bot_description(message):
+def get_keywords(message):
     word_list = lib.KEYWORDS.replace(",", "\n")
     bot.send_message(message.chat.id, 'Список ключевых слов:\n' + word_list)
 

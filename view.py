@@ -56,7 +56,7 @@ def show_tasks(tasks: dict):
         title = data[0]
         if title == 'Habr':
             title = colored_text(title + ':', 'violet')
-        elif title == 'FL.ru':
+        elif title == 'FL':
             title = colored_text(title + ':', 'green')
         title += ' ' + key + ' ' + mark_words(data[1])
         print(title)

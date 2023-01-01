@@ -104,7 +104,7 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[2].lower():
                     new_task = True
-                    new_tasks[key] = ['FL.ru', data_list[0], data_list[2], data_list[1], data_list[4], data_list[3], '']
+                    new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1], data_list[4], data_list[3], '']
 
     if beep and new_task:
         lib.beep_beep()
