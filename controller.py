@@ -3,6 +3,7 @@ import view
 import history
 import model_fl as fl
 import model_habr as habr
+import model_freelance as free
 import common_lib as lib
 
 import telebot
@@ -22,10 +23,10 @@ description = """
 Можно просмотреть последние
 5 задач: [/history]
 Сайты:
-[https://www.fl.ru/projects/](FL)
-[https://freelance.habr.com/tasks](Habr)
-[https://kwork.ru/projects](Kwork)
-[https://freelance.ru/project/search](Freelance)
+[FL](https://www.fl.ru/projects/)
+[Habr](https://freelance.habr.com/tasks)
+[Kwork](https://kwork.ru/projects)
+[Freelance](https://freelance.ru/project/search)
 Эта справка: [/help]"""
 
 
@@ -59,10 +60,12 @@ def run_parser(message):
     # 6 - customer
     dict_habr = dict()
     dict_fl = dict()
+    dict_free = dict()
     i = 0.5
     while True:
         dict_habr, new_tasks = habr.parse_habr(dict_habr, new_tasks)
         dict_fl, new_tasks = fl.parse_fl(dict_fl, new_tasks)
+        dict_free, new_tasks = free.parse_freelance(dict_free, new_tasks)
         if len(new_tasks):
             view.show_tasks(new_tasks)
             view.show_for_bot(bot, message, new_tasks)

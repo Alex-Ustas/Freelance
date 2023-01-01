@@ -58,6 +58,8 @@ def show_tasks(tasks: dict):
             title = colored_text(title + ':', 'violet')
         elif title == 'FL':
             title = colored_text(title + ':', 'green')
+        elif title == 'Freelance':
+            title = colored_text(title + ':', 'blue')
         title += ' ' + key + ' ' + mark_words(data[1])
         print(title)
         if data[2]:
