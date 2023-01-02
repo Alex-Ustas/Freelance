@@ -54,7 +54,7 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         if info is None:
             info = '<Info not defined>'
         else:
-            info = info.next.strip().replace('\n', ' ').replace('  ', ' ')
+            info = info.next.strip().replace('\n', ' ').replace('\r', ' ').replace('  ', ' ')
         # print(info)
 
         cost = footer_part.find('div', class_='cost')

@@ -1,10 +1,11 @@
+# Telegram: https://t.me/AlexUstas0
+
 import time
 import view
 import history
 import model_fl as fl
 import model_habr as habr
 import model_freelance as free
-import common_lib as lib
 
 import telebot
 import bot_token
@@ -43,7 +44,7 @@ def bot_description(message):
 
 @bot.message_handler(commands=['keywords'])
 def get_keywords(message):
-    word_list = lib.KEYWORDS.replace(",", "\n")
+    word_list = view.get_keywords()
     bot.send_message(message.chat.id, 'Список ключевых слов:\n' + word_list)
 
 

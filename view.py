@@ -1,6 +1,10 @@
 import common_lib as lib
 
 
+def get_keywords() -> str:
+    return lib.KEYWORDS.replace(",", "\n")
+
+
 def colored_text(text: str, color: str) -> str:
     colors = {'black': '30',
               'red': '31',
