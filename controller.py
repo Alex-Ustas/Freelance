@@ -23,6 +23,7 @@ description = """
 Запустить поиск задач: [/go]
 Можно просмотреть последние
 5 задач: [/history]
+Информация по заданию: [/task] *id* 
 Сайты:
 [FL](https://www.fl.ru/projects/)
 [Habr](https://freelance.habr.com/tasks)
@@ -83,6 +84,19 @@ def get_history(message):
     tasks = history.get_history(5)
     bot.send_message(message.chat.id, f'Последние *{len(tasks)}* задач:', parse_mode='Markdown')
     view.show_for_bot(bot, message, tasks)
+
+
+@bot.message_handler(commands=['task'], content_types=['text'])
+def get_task(message):
+    text = message.text.split()
+    if len(text) == 1:
+        bot.reply_to(message, 'Для получения информации укажите *id* задания', parse_mode='Markdown')
+    else:
+        task = history.get_task(text[1])
+        if task:
+            view.show_for_bot(bot, message, task)
+        else:
+            bot.reply_to(message, f'Задание *{text[1]}* не найдено', parse_mode='Markdown')
 
 
 bot.infinity_polling()

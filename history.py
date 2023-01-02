@@ -35,3 +35,17 @@ def get_history(tasks_num=-1) -> dict:
             items = [item.replace('$$$', ';') for item in items]
             tasks[items[1]] = [items[2], items[3], items[4], items[5], 'Дата/время: ' + items[0], items[7], items[8]]
     return tasks
+
+
+def get_task(task_id: str) -> dict:
+    task = dict()
+    with open(LOG_FILE, 'r', encoding='utf-8') as file:
+        all_lines = file.readlines()
+    for line in all_lines:
+        line = line.replace('\n', '')
+        items = line.split(';')
+        items = [item.replace('$$$', ';') for item in items]
+        if items[1] == task_id:
+            task[items[1]] = [items[2], items[3], items[4], items[5], 'Дата/время: ' + items[0], items[7], items[8]]
+            break
+    return task
