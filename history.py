@@ -33,7 +33,8 @@ def get_history(tasks_num=-1) -> dict:
             line = line.replace('\n', '')
             items = line.split(';')
             items = [item.replace('$$$', ';') for item in items]
-            tasks[items[1]] = [items[2], items[3], items[4], items[5], 'Дата/время: ' + items[0], items[7], items[8]]
+            tasks[items[1]] = [items[2], items[3], items[4], items[5], 'Дата/время: ' + items[0],
+                               items[7], items[8], items[9]]
     return tasks
 
 
@@ -46,6 +47,7 @@ def get_task(task_id: str) -> dict:
         items = line.split(';')
         items = [item.replace('$$$', ';') for item in items]
         if items[1] == task_id:
-            task[items[1]] = [items[2], items[3], items[4], items[5], 'Дата/время: ' + items[0], items[7], items[8]]
+            task[items[1]] = [items[2], items[3], items[4], items[5], 'Дата/время: ' + items[0],
+                              items[7], items[8], items[9]]
             break
     return task
