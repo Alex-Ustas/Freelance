@@ -44,7 +44,6 @@ def parse_response_habr(text: str):
 def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
     """Parse habr.com"""
     keyword = lib.KEYWORDS.split(',')
-    beep = True if len(habr_dict.keys()) > 0 else False
     if method == 1:
         s = rq.get('https://freelance.habr.com/tasks')
         text = ht.html2text(s.text)
@@ -81,18 +80,13 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         habr_dict[task_id] = [task, new_task, response, view, ago, cash]
 
     # Check new projects
-    new_task = False
     for key, data_list in habr_dict.items():
         for word in keyword:
             if word in data_list[0].lower():
                 if data_list[1]:
                     cost = 'договорная' if data_list[5] == 'договорная' else "{:,.0f}".format(int(data_list[5]))
                     new_tasks[key] = ['Habr', data_list[0], '', cost, data_list[4], str(data_list[2]), '']
-                    new_task = True
                 break
-
-    if beep and new_task:
-        lib.beep_beep()
 
     return habr_dict, new_tasks
 

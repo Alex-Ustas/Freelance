@@ -7,7 +7,6 @@ import common_lib as lib
 
 def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
     """Parse fl.ru"""
-    beep = True if len(fl_dict) > 0 else False
     data = dict()
     if method == 1:
         href_fl = 'https://www.fl.ru/projects/'
@@ -39,7 +38,6 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         else:
             task_id = title.get('name')[3:]
             title = title.next.strip()
-            # title = lib.mark_words(title)
         # print(title)
 
         scripts = ref.find_all('script')
@@ -97,17 +95,13 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         data[task_id] = [title, price, info, resp, time]
 
     # Check new projects
-    new_task = False
     for key, data_list in data.items():
         if key not in fl_dict.keys():
             fl_dict[key] = data_list
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[2].lower():
-                    new_task = True
                     new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1], data_list[4], data_list[3], '']
 
-    if beep and new_task:
-        lib.beep_beep()
     return fl_dict, new_tasks
 
 

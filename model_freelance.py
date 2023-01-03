@@ -7,7 +7,6 @@ import common_lib as lib
 
 def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
     """Parse freelance.ru"""
-    beep = True if len(free_dict) > 0 else False
     data = dict()
     rq = None
     if method == 1:
@@ -88,18 +87,14 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         data[task_id] = [title, info, cost, time, resp, term]
 
     # Check new projects
-    new_task = False
     for key, data_list in data.items():
         if key not in free_dict.keys():
             free_dict[key] = data_list
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[1].lower():
-                    new_task = True
                     new_tasks[key] = ['Freelance', data_list[0], data_list[1], data_list[2],
                                       data_list[3], data_list[4], data_list[5]]
 
-    if beep and new_task:
-        lib.beep_beep()
     return free_dict, new_tasks
 
 

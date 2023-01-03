@@ -1,5 +1,6 @@
 # Telegram: https://t.me/AlexUstas0
 
+import winsound
 import time
 import view
 import history
@@ -30,6 +31,15 @@ description = """
 [Kwork](https://kwork.ru/projects)
 [Freelance](https://freelance.ru/project/search)
 Эта справка: [/help]"""
+
+
+def beep_beep():
+    """Alarm"""
+    winsound.Beep(2000, 200)
+    time.sleep(0.1)
+    winsound.Beep(2000, 200)
+    time.sleep(0.1)
+    winsound.Beep(1500, 400)
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -69,6 +79,7 @@ def run_parser(message):
         dict_fl, new_tasks = fl.parse_fl(dict_fl, new_tasks)
         dict_free, new_tasks = free.parse_freelance(dict_free, new_tasks)
         if len(new_tasks):
+            beep_beep()
             view.show_tasks(new_tasks)
             view.show_for_bot(bot, message, new_tasks)
             history.write_tasks(new_tasks)

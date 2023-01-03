@@ -92,4 +92,7 @@ def show_for_bot(bot, message, tasks: dict):
             msg += f'Откликов: {data[5]}\n'
         if data[6]:
             msg += data[6]
-        bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+        try:
+            bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+        except:
+            print(colored_text('Problem to show task:\n', 'red') + data[0] + ' ' + key + ' ' + mark_words(data[1]))
