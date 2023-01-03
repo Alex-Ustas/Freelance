@@ -8,6 +8,7 @@ import common_lib as lib
 def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
     """Parse fl.ru"""
     data = dict()
+    rq = None
     if method == 1:
         href_fl = 'https://www.fl.ru/projects/'
         headers = \
@@ -34,11 +35,14 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         title = ref.find('a')
         if title is None:
             title = '<Title not defined>'
+            link = ''
             task_id = '0'
         else:
             task_id = title.get('name')[3:]
+            link = 'https://www.fl.ru' + title.get('href')
             title = title.next.strip()
         # print(title)
+        # print(link)
 
         scripts = ref.find_all('script')
         price = '<Title not defined>'
@@ -92,7 +96,7 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
                 else:
                     time = str(time.next).strip() + ' ' + str(time.next.next).strip()
         # print('\t' + time)
-        data[task_id] = [title, price, info, resp, time]
+        data[task_id] = [title, price, info, resp, time, link]
 
     # Check new projects
     for key, data_list in data.items():
@@ -100,7 +104,8 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             fl_dict[key] = data_list
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[2].lower():
-                    new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1], data_list[4], data_list[3], '']
+                    new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1],
+                                      data_list[4], data_list[3], '', data_list[5]]
 
     return fl_dict, new_tasks
 

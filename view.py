@@ -91,7 +91,9 @@ def show_for_bot(bot, message, tasks: dict):
         if data[5]:
             msg += f'Откликов: {data[5]}\n'
         if data[6]:
-            msg += data[6]
+            msg += data[6] + '\n'
+        if data[7]:
+            msg += '[Link](' + data[7] + ')'
         try:
             bot.send_message(message.chat.id, msg, parse_mode='Markdown')
         except:

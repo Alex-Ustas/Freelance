@@ -10,13 +10,13 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
     data = dict()
     rq = None
     if method == 1:
-        link = 'https://freelance.ru/project/search'
+        href = 'https://freelance.ru/project/search'
         headers = \
             {
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
                  (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0'
             }
-        rq = requests.get(link, headers=headers)
+        rq = requests.get(href, headers=headers)
         soup = bs(rq.text, 'html.parser')
     else:
         html = open(r'C:\Temp\Python\freelance.html', encoding='utf8').read()
@@ -74,7 +74,7 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
         if resp is None:
             resp = '<Response not defined>'
         else:
-            resp = resp.next.strip()
+            resp = resp.next.replace('Откликов:', '').strip()
         # print(resp)
 
         term = footer_part.find('div', class_='term')
@@ -84,7 +84,14 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             term = term.next.strip()
         # print(term)
 
-        data[task_id] = [title, info, cost, time, resp, term]
+        link = title_part.find('a', class_='description')
+        if link is None:
+            link = ''
+        else:
+            link = 'https://freelance.ru' + link.get('href')
+        # print(link)
+
+        data[task_id] = [title, info, cost, time, resp, term, link]
 
     # Check new projects
     for key, data_list in data.items():
@@ -93,7 +100,7 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[1].lower():
                     new_tasks[key] = ['Freelance', data_list[0], data_list[1], data_list[2],
-                                      data_list[3], data_list[4], data_list[5]]
+                                      data_list[3], data_list[4], data_list[5], data_list[6]]
 
     return free_dict, new_tasks
 

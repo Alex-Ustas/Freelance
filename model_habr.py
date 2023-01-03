@@ -85,7 +85,8 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             if word in data_list[0].lower():
                 if data_list[1]:
                     cost = 'договорная' if data_list[5] == 'договорная' else "{:,.0f}".format(int(data_list[5]))
-                    new_tasks[key] = ['Habr', data_list[0], '', cost, data_list[4], str(data_list[2]), '']
+                    new_tasks[key] = ['Habr', data_list[0], '', cost, data_list[4],
+                                      str(data_list[2]), '', 'https://freelance.habr.com/tasks/' + key]
                 break
 
     return habr_dict, new_tasks

@@ -69,7 +69,8 @@ def run_parser(message):
     # 3 - cost
     # 4 - time
     # 5 - responses
-    # 6 - customer
+    # 6 - customer/term
+    # 7 - link
     dict_habr = dict()
     dict_fl = dict()
     dict_free = dict()
