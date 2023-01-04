@@ -54,48 +54,52 @@ def split_sentence(text: str, length: int, start_with='') -> str:
     return new
 
 
-def show_tasks(tasks: dict):
+def show_tasks(tasks: dict, new_only=True):
     """Show detailed info regarding every task"""
     for key, data in tasks.items():
-        title = data[0]
-        if title == 'Habr':
-            title = colored_text(title + ':', 'violet')
-        elif title == 'FL':
-            title = colored_text(title + ':', 'green')
-        elif title == 'Freelance':
-            title = colored_text(title + ':', 'blue')
-        title += ' ' + split_sentence(key + ' ' + mark_words(data[1]), 110)
-        print(title)
-        if data[2]:
-            print(split_sentence(mark_words(data[2]), 120, '\t'))
-        if data[3]:
-            print(f'\tСтоимость: {data[3]}')
-        if data[4]:
-            print(f'\t{data[4]}')
-        if data[5]:
-            print(f'\tОткликов: {data[5]}')
-        if data[6]:
-            print(f'\t{data[6]}')
+        if not new_only or (new_only and data[8] == 'y'):
+            title = data[0]
+            if title == 'Habr':
+                title = colored_text(title + ':', 'violet')
+            elif title == 'FL':
+                title = colored_text(title + ':', 'green')
+            elif title == 'Freelance':
+                title = colored_text(title + ':', 'blue')
+            title += ' ' + split_sentence(key + ' ' + mark_words(data[1]), 110)
+            print(title)
+            if data[2]:
+                print(split_sentence(mark_words(data[2]), 120, '\t'))
+            if data[3]:
+                print(f'\tСтоимость: {data[3]}')
+            if data[4]:
+                print(f'\t{data[4]}')
+            if data[5]:
+                print(f'\tОткликов: {data[5]}')
+            if data[6]:
+                print(f'\t{data[6]}')
 
 
-def show_for_bot(bot, message, tasks: dict):
+def show_for_bot(bot, message, tasks: dict, new_only=True):
+    """Show detailed info regarding every task in telegram"""
     for key, data in tasks.items():
-        msg = '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
-        msg += '-' * 60 + '\n'
-        if data[2]:
-            msg += mark_words(data[2], 'bot').replace('.ru/', '_') + '\n'
-        if data[3]:
-            msg += f'Стоимость: *{data[3]}*\n'
-        if data[4]:
-            msg += f'{data[4]}\n'
-        if data[5]:
-            msg += f'Откликов: {data[5]}\n'
-        if data[6]:
-            msg += data[6] + '\n'
-        if data[7]:
-            msg += '[Link](' + data[7] + ')'
-        try:
-            bot.send_message(message.chat.id, msg, parse_mode='Markdown')
-        except Exception as err:
-            print(colored_text('Problem to show task:\n', 'red') + data[0] + ' ' + key + ' ' + mark_words(data[1]))
-            print(f"Unexpected {err=}, {type(err)=}")
+        if not new_only or (new_only and data[8] == 'y'):
+            msg = '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
+            msg += '-' * 60 + '\n'
+            if data[2]:
+                msg += mark_words(data[2], 'bot').replace('.ru/', '_') + '\n'
+            if data[3]:
+                msg += f'Стоимость: *{data[3]}*\n'
+            if data[4]:
+                msg += f'{data[4]}\n'
+            if data[5]:
+                msg += f'Откликов: {data[5]}\n'
+            if data[6]:
+                msg += data[6] + '\n'
+            if data[7]:
+                msg += '[Link](' + data[7] + ')'
+            try:
+                bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+            except Exception as err:
+                print(colored_text('Problem to show task:\n', 'red')
+                      + data[0] + ' ' + key + ' ' + mark_words(data[1]))
+                print(f"Unexpected {err=}, {type(err)=}")

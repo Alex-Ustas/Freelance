@@ -44,6 +44,7 @@ def beep_beep():
 
 @bot.message_handler(commands=['start', 'help'])
 def bot_description(message):
+    """Show help for bot using and add buttons"""
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
     itembtn1 = types.KeyboardButton('/help')
     itembtn2 = types.KeyboardButton('/go')
@@ -55,15 +56,17 @@ def bot_description(message):
 
 @bot.message_handler(commands=['keywords'])
 def get_keywords(message):
+    """Show keywords"""
     word_list = view.get_keywords()
     bot.send_message(message.chat.id, 'Список ключевых слов:\n' + word_list)
 
 
 @bot.message_handler(commands=['go'])
 def run_parser(message):
-    new_tasks = dict()
+    """Parse platforms and show new tasks"""
+    new_tasks = history.get_history()
     # - - id (key)
-    # 0 - service (fl, kwork, habr)
+    # 0 - platform (fl, kwork, habr, freelance)
     # 1 - task name
     # 2 - detail description
     # 3 - cost
@@ -71,42 +74,44 @@ def run_parser(message):
     # 5 - responses
     # 6 - customer/term
     # 7 - link
-    dict_habr = dict()
-    dict_fl = dict()
-    dict_free = dict()
+    # 8 - flag for new task (y/n)
     i = 0.5
     while True:
-        dict_habr, new_tasks = habr.parse_habr(dict_habr, new_tasks)
-        dict_fl, new_tasks = fl.parse_fl(dict_fl, new_tasks)
-        dict_free, new_tasks = free.parse_freelance(dict_free, new_tasks)
-        if len(new_tasks):
+        new = False
+        new_tasks, new = habr.parse_habr(new_tasks, new)
+        new_tasks, new = fl.parse_fl(new_tasks, new)
+        new_tasks, new = free.parse_freelance(new_tasks, new)
+        if new:
             beep_beep()
             view.show_tasks(new_tasks)
             view.show_for_bot(bot, message, new_tasks)
+            for key in new_tasks.keys():
+                new_tasks[key][8] = 'n'
             history.write_tasks(new_tasks)
         if int(i) % 5 == 0 and i - int(i) == 0:
             print(int(i), 'мин.')
         i += 0.5
         time.sleep(30)
-        new_tasks = dict()
 
 
 @bot.message_handler(commands=['history'])
 def get_history(message):
+    """Get several last tasks from file"""
     tasks = history.get_history(5)
     bot.send_message(message.chat.id, f'Последние *{len(tasks)}* задач:', parse_mode='Markdown')
-    view.show_for_bot(bot, message, tasks)
+    view.show_for_bot(bot, message, tasks, False)
 
 
 @bot.message_handler(commands=['task'], content_types=['text'])
 def get_task(message):
+    """Get task by id from file"""
     text = message.text.split()
     if len(text) == 1:
         bot.reply_to(message, 'Для получения информации укажите *id* задания', parse_mode='Markdown')
     else:
         task = history.get_task(text[1])
         if task:
-            view.show_for_bot(bot, message, task)
+            view.show_for_bot(bot, message, task, False)
         else:
             bot.reply_to(message, f'Задание *{text[1]}* не найдено', parse_mode='Markdown')
 

@@ -41,7 +41,7 @@ def parse_response_habr(text: str):
         return 0, 0, text.strip()
 
 
-def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
+def parse_habr(new_tasks: dict, new: bool, method=1) -> (dict, bool):
     """Parse habr.com"""
     keyword = lib.KEYWORDS.split(',')
     if method == 1:
@@ -54,6 +54,7 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
 
     # Generate dictionary
     nchar = 0
+    data = dict()
     while True:
         stop = False
         while '/tasks/' not in text[nchar]:
@@ -67,7 +68,7 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             break
 
         task, task_id = parse_task_habr(text[nchar])
-        new_task = habr_dict.get(task_id, '_New_')
+        new_task = new_tasks.get(task_id, '_New_')
         new_task = True if new_task == '_New_' else False
         response, view, ago = parse_response_habr(text[nchar + 2])
         nchar += 3
@@ -79,20 +80,21 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
             cash = cash[0:cash.find('руб.')].replace(' ', '')
         else:
             cash = 'договорная'
-        habr_dict[task_id] = [task, new_task, response, view, ago, cash]
+        data[task_id] = [task, new_task, response, view, ago, cash]
 
     # Check new projects
-    for key, data_list in habr_dict.items():
+    for key, data_list in data.items():
         for word in keyword:
             if word in data_list[0].lower():
                 if data_list[1]:
                     cost = 'договорная' if data_list[5] == 'договорная' else "{:,.0f}".format(int(data_list[5]))
                     new_tasks[key] = ['Habr', data_list[0], '', cost, data_list[4],
-                                      str(data_list[2]), '', 'https://freelance.habr.com/tasks/' + key]
+                                      str(data_list[2]), '', 'https://freelance.habr.com/tasks/' + key, 'y']
+                    new = True
                 break
 
-    return habr_dict, new_tasks
+    return new_tasks, new
 
 
 if __name__ == '__main__':
-    dummy = parse_habr(dict(), dict(), 0)
+    dummy = parse_habr(dict(), False, 0)

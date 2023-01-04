@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup as bs
 import common_lib as lib
 
 
-def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
+def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool):
     """Parse fl.ru"""
     data = dict()
     rq = None
@@ -100,15 +100,15 @@ def parse_fl(fl_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
 
     # Check new projects
     for key, data_list in data.items():
-        if key not in fl_dict.keys():
-            fl_dict[key] = data_list
+        if key not in new_tasks.keys():
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[2].lower():
                     new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1],
-                                      data_list[4], data_list[3], '', data_list[5]]
+                                      data_list[4], data_list[3], '', data_list[5], 'y']
+                    new = True
 
-    return fl_dict, new_tasks
+    return new_tasks, new
 
 
 if __name__ == '__main__':
-    dummy = parse_fl(dict(), dict(), 0)
+    dummy = parse_fl(dict(), False, 0)

@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup as bs
 import common_lib as lib
 
 
-def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
+def parse_freelance(new_tasks: dict, new: bool, method=1) -> (dict, bool):
     """Parse freelance.ru"""
     data = dict()
     rq = None
@@ -95,15 +95,15 @@ def parse_freelance(free_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
 
     # Check new projects
     for key, data_list in data.items():
-        if key not in free_dict.keys():
-            free_dict[key] = data_list
+        if key not in new_tasks.keys():
             for word in lib.KEYWORDS.split(','):
                 if word in data_list[0].lower() or word in data_list[1].lower():
                     new_tasks[key] = ['Freelance', data_list[0], data_list[1], data_list[2],
-                                      data_list[3], data_list[4], data_list[5], data_list[6]]
+                                      data_list[3], data_list[4], data_list[5], data_list[6], 'y']
+                    new = True
 
-    return free_dict, new_tasks
+    return new_tasks, new
 
 
 if __name__ == '__main__':
-    dummy = parse_freelance(dict(), dict(), 0)
+    dummy = parse_freelance(dict(), False, 0)
