@@ -61,6 +61,8 @@ def parse_habr(habr_dict: dict, new_tasks: dict, method=1) -> (dict, dict):
                 stop = True
                 break
             nchar += 1
+            if nchar >= len(text):
+                break
         if stop:
             break
 

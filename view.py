@@ -64,7 +64,7 @@ def show_tasks(tasks: dict):
             title = colored_text(title + ':', 'green')
         elif title == 'Freelance':
             title = colored_text(title + ':', 'blue')
-        title += ' ' + key + ' ' + mark_words(data[1])
+        title += ' ' + split_sentence(key + ' ' + mark_words(data[1]), 110)
         print(title)
         if data[2]:
             print(split_sentence(mark_words(data[2]), 120, '\t'))
@@ -83,7 +83,7 @@ def show_for_bot(bot, message, tasks: dict):
         msg = '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
         msg += '-' * 60 + '\n'
         if data[2]:
-            msg += mark_words(data[2], 'bot') + '\n'
+            msg += mark_words(data[2], 'bot').replace('.ru/', '_') + '\n'
         if data[3]:
             msg += f'Стоимость: *{data[3]}*\n'
         if data[4]:
@@ -96,5 +96,6 @@ def show_for_bot(bot, message, tasks: dict):
             msg += '[Link](' + data[7] + ')'
         try:
             bot.send_message(message.chat.id, msg, parse_mode='Markdown')
-        except:
+        except Exception as err:
             print(colored_text('Problem to show task:\n', 'red') + data[0] + ' ' + key + ' ' + mark_words(data[1]))
+            print(f"Unexpected {err=}, {type(err)=}")
