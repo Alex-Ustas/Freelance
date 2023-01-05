@@ -86,7 +86,7 @@ def show_for_bot(bot, message, tasks: dict, new_only=True):
             msg = '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
             msg += '-' * 60 + '\n'
             if data[2]:
-                msg += mark_words(data[2], 'bot').replace('.ru/', '_') + '\n'
+                msg += mark_words(data[2], 'bot').replace('.ru/', '_').replace('.com/', '_') + '\n'
             if data[3]:
                 msg += f'Стоимость: *{data[3]}*\n'
             if data[4]:
@@ -100,6 +100,13 @@ def show_for_bot(bot, message, tasks: dict, new_only=True):
             try:
                 bot.send_message(message.chat.id, msg, parse_mode='Markdown')
             except Exception as err:
-                print(colored_text('Problem to show task:\n', 'red')
-                      + data[0] + ' ' + key + ' ' + mark_words(data[1]))
-                print(f"Unexpected {err=}, {type(err)=}")
+                error = data[0] + ' ' + key + ' ' + data[1] + f'\nUnexpected {err=}, {type(err)=}'
+                show_error(bot, message, error)
+
+
+def show_error(bot, message, error_text: str):
+    if error_text:
+        print(colored_text('Ошибка обработки данных', 'red'))
+        print(split_sentence(error_text, 120, '\t'))
+        msg = '*Ошибка обработки данных*\n' + error_text
+        bot.send_message(message.chat.id, msg, parse_mode='Markdown')

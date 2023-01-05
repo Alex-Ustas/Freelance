@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup as bs
 import common_lib as lib
 
 
-def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool):
+def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
     """Parse fl.ru"""
     data = dict()
     rq = None
@@ -16,8 +16,11 @@ def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool):
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
                  (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0'
             }
-        rq = requests.get(href_fl, headers=headers)
-        soup = bs(rq.text, 'html.parser')
+        try:
+            rq = requests.get(href_fl, headers=headers)
+            soup = bs(rq.text, 'html.parser')
+        except Exception as err:
+            return new_tasks, new, f'FL: unexpected {err=}, {type(err)=}\n'
     else:
         html = open(r'C:\Temp\Python\fl2.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
@@ -107,7 +110,7 @@ def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool):
                                       data_list[4], data_list[3], '', data_list[5], 'y']
                     new = True
 
-    return new_tasks, new
+    return new_tasks, new, ''
 
 
 if __name__ == '__main__':

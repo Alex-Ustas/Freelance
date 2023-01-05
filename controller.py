@@ -78,9 +78,10 @@ def run_parser(message):
     i = 0.5
     while True:
         new = False
-        new_tasks, new = habr.parse_habr(new_tasks, new)
-        new_tasks, new = fl.parse_fl(new_tasks, new)
-        new_tasks, new = free.parse_freelance(new_tasks, new)
+        new_tasks, new, err1 = habr.parse_habr(new_tasks, new)
+        new_tasks, new, err2 = fl.parse_fl(new_tasks, new)
+        new_tasks, new, err3 = free.parse_freelance(new_tasks, new)
+        error = err1 + err2 + err3
         if new:
             beep_beep()
             view.show_tasks(new_tasks)
@@ -88,6 +89,9 @@ def run_parser(message):
             for key in new_tasks.keys():
                 new_tasks[key][8] = 'n'
             history.write_tasks(new_tasks)
+        if error:
+            beep_beep()
+            view.show_error(bot, message, error)
         if int(i) % 5 == 0 and i - int(i) == 0:
             print(int(i), 'мин.')
         i += 0.5
