@@ -12,6 +12,7 @@ ex0*.spec
 *.userosscache
 *.sln.docstates
 bot_token.py
+temp_habr.py
 
 # Python build & dist files
 build/

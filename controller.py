@@ -11,6 +11,7 @@ import model_freelance as free
 import telebot
 import bot_token
 from telebot import types
+
 # Name: AlexFreelance
 # Bot name: alex_freelance_bot
 
@@ -77,10 +78,10 @@ def run_parser(message):
     # 8 - flag for new task (y/n)
     i = 0.5
     while True:
-        new = False
-        new_tasks, new, err1 = habr.parse_habr(new_tasks, new)
-        new_tasks, new, err2 = fl.parse_fl(new_tasks, new)
-        new_tasks, new, err3 = free.parse_freelance(new_tasks, new)
+        new_tasks, new1, err1 = habr.parse_habr(new_tasks)
+        new_tasks, new2, err2 = fl.parse_fl(new_tasks)
+        new_tasks, new3, err3 = free.parse_freelance(new_tasks)
+        new = new1 + new2 + new3
         error = err1 + err2 + err3
         if new:
             beep_beep()

@@ -5,10 +5,11 @@ from bs4 import BeautifulSoup as bs
 import common_lib as lib
 
 
-def parse_freelance(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
+def parse_freelance(new_tasks: dict, method=1) -> (dict, int, str):
     """Parse freelance.ru"""
     data = dict()
     rq = None
+    new = 0
     if method == 1:
         href = 'https://freelance.ru/project/search'
         headers = \
@@ -20,7 +21,7 @@ def parse_freelance(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
             rq = requests.get(href, headers=headers)
             soup = bs(rq.text, 'html.parser')
         except Exception as err:
-            return new_tasks, new, f'Freelance: unexpected {err=}, {type(err)=}\n'
+            return new_tasks, 0, f'Freelance: unexpected {err=}, {type(err)=}\n'
     else:
         html = open(r'C:\Temp\Python\freelance.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
@@ -103,10 +104,10 @@ def parse_freelance(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
                 if word in data_list[0].lower() or word in data_list[1].lower():
                     new_tasks[key] = ['Freelance', data_list[0], data_list[1], data_list[2],
                                       data_list[3], data_list[4], data_list[5], data_list[6], 'y']
-                    new = True
+                    new = 1
 
     return new_tasks, new, ''
 
 
 if __name__ == '__main__':
-    dummy = parse_freelance(dict(), False, 0)
+    dummy = parse_freelance(dict(), 0)

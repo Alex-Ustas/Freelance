@@ -5,22 +5,23 @@ from bs4 import BeautifulSoup as bs
 import common_lib as lib
 
 
-def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
+def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
     """Parse fl.ru"""
     data = dict()
     rq = None
+    new = 0
     if method == 1:
-        href_fl = 'https://www.fl.ru/projects/'
+        href = 'https://www.fl.ru/projects/'
         headers = \
             {
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
                  (KHTML, like Gecko) Chrome/107.0.0.0 Safari/537.36 OPR/93.0.0.0'
             }
         try:
-            rq = requests.get(href_fl, headers=headers)
+            rq = requests.get(href, headers=headers)
             soup = bs(rq.text, 'html.parser')
         except Exception as err:
-            return new_tasks, new, f'FL: unexpected {err=}, {type(err)=}\n'
+            return new_tasks, 0, f'FL: unexpected {err=}, {type(err)=}\n'
     else:
         html = open(r'C:\Temp\Python\fl2.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
@@ -108,10 +109,10 @@ def parse_fl(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
                 if word in data_list[0].lower() or word in data_list[2].lower():
                     new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1],
                                       data_list[4], data_list[3], '', data_list[5], 'y']
-                    new = True
+                    new = 1
 
     return new_tasks, new, ''
 
 
 if __name__ == '__main__':
-    dummy = parse_fl(dict(), False, 0)
+    dummy = parse_fl(dict(), 0)

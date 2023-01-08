@@ -41,15 +41,16 @@ def parse_response_habr(text: str):
         return 0, 0, text.strip()
 
 
-def parse_habr(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
+def parse_habr(new_tasks: dict, method=1) -> (dict, int, str):
     """Parse habr.com"""
     keyword = lib.KEYWORDS.split(',')
+    new = 0
     if method == 1:
         try:
             s = rq.get('https://freelance.habr.com/tasks')
             text = ht.html2text(s.text)
         except Exception as err:
-            return new_tasks, new, f'Habr: unexpected {err=}, {type(err)=}\n'
+            return new_tasks, 0, f'Habr: unexpected {err=}, {type(err)=}\n'
     else:
         html = open(r'C:\Temp\Python\habr_html.txt', encoding='utf8').read()
         text = ht.html2text(html)
@@ -93,11 +94,11 @@ def parse_habr(new_tasks: dict, new: bool, method=1) -> (dict, bool, str):
                     cost = 'договорная' if data_list[5] == 'договорная' else "{:,.0f}".format(int(data_list[5]))
                     new_tasks[key] = ['Habr', data_list[0], '', cost, data_list[4],
                                       str(data_list[2]), '', 'https://freelance.habr.com/tasks/' + key, 'y']
-                    new = True
+                    new = 1
                 break
 
     return new_tasks, new, ''
 
 
 if __name__ == '__main__':
-    dummy = parse_habr(dict(), False, 0)
+    dummy = parse_habr(dict(), 0)
