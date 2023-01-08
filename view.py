@@ -25,7 +25,7 @@ def mark_words(exp: str, msg_type='terminal', keyword=lib.KEYWORDS) -> str:
             pos = exp.lower().find(word)
             cut = exp[pos:pos + len(word)]
             if msg_type == 'bot':
-                exp = exp.replace(cut, '*' + cut + '*')
+                exp = exp.replace(cut, '<b>' + cut + '</b>')
             else:
                 exp = exp.replace(cut, colored_text(cut, 'yellow'))
     return exp
@@ -83,12 +83,12 @@ def show_for_bot(bot, message, tasks: dict, new_only=True):
     """Show detailed info regarding every task in telegram"""
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
-            msg = '*' + data[0] + ':* ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
-            msg += '-' * 60 + '\n'
+            msg = '<b>' + data[0] + ':</b> ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
+            msg += '_' * 60 + '\n'
             if data[2]:
-                msg += mark_words(data[2], 'bot').replace('.ru/', '_').replace('.com/', '_') + '\n'
+                msg += mark_words(data[2], 'bot') + '\n'
             if data[3]:
-                msg += f'Стоимость: *{data[3]}*\n'
+                msg += f'Стоимость: <b>{data[3]}</b>\n'
             if data[4]:
                 msg += f'{data[4]}\n'
             if data[5]:
@@ -96,9 +96,9 @@ def show_for_bot(bot, message, tasks: dict, new_only=True):
             if data[6]:
                 msg += data[6] + '\n'
             if data[7]:
-                msg += '[Link](' + data[7] + ')'
+                msg += f'<a href="{data[7]}">Link</a>'
             try:
-                bot.send_message(message.chat.id, msg, parse_mode='Markdown')
+                bot.send_message(message.chat.id, msg, parse_mode='html')
             except Exception as err:
                 error = data[0] + ' ' + key + ' ' + data[1] + f'\nUnexpected {err=}, {type(err)=}'
                 show_error(bot, message, error)
