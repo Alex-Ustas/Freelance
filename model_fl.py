@@ -38,7 +38,7 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
         # print(ref)
         title = ref.find('a')
         if title is None:
-            title = '<Title not defined>'
+            title = '[Title not defined]'
             link = ''
             task_id = '0'
         else:
@@ -49,7 +49,7 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
         # print(link)
 
         scripts = ref.find_all('script')
-        price = '<Title not defined>'
+        price = ''
         if len(scripts) > 0:
             price = scripts[0]
             if 'По договоренности' in str(price):
@@ -69,34 +69,37 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
                 price = cost + ' ' + curr
         # print('\t' + price)
 
-        info = '<Info not defined>'
+        info = ''
         if len(scripts) > 0:
             info = scripts[1]
             info = bs(info.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
-            info = '<Info not defined>' if info is None else info.next.strip()
+            if info is None:
+                info = ''
+            else:
+                info = info.next.strip()
         # print(info)
 
-        resp = '<Response not defined>'
+        resp = ''
         if len(scripts) > 1:
             resp = scripts[2]
             resp = bs(resp.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
             if resp is None:
-                resp = '<Response not defined>'
+                resp = ''
             else:
                 resp = resp.find('a').next.next.strip().lower()
         # print('\t' + resp)
         data[task_id] = [title, price, info, resp]
 
-        time = '<Time not defined>'
+        time = ''
         if len(scripts) > 1:
             time = scripts[2]
             time = bs(time.next.split("'")[1], 'html.parser').find('div', class_="b-post__txt")
             if time is None:
-                time = '<Time not defined>'
+                time = ''
             else:
                 time = time.find('span', class_='b-post__bold b-layout__txt_inline-block')
                 if time is None:
-                    time = '<Time not defined>'
+                    time = ''
                 else:
                     time = str(time.next).strip() + ' ' + str(time.next.next).strip()
         # print('\t' + time)

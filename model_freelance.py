@@ -40,7 +40,7 @@ def parse_freelance(new_tasks: dict, method=1) -> (dict, int, str):
 
         title = title_part.find('h2', class_='title')
         if title is None:
-            title = '<Title not defined>'
+            title = '[Title not defined]'
         else:
             title = title.get('title')
         # print(title)
@@ -55,35 +55,35 @@ def parse_freelance(new_tasks: dict, method=1) -> (dict, int, str):
 
         info = title_part.find('a', class_='description')
         if info is None:
-            info = '<Info not defined>'
+            info = ''
         else:
             info = info.next.strip().replace('\n', ' ').replace('\r', ' ').replace('  ', ' ')
         # print(info)
 
         cost = footer_part.find('div', class_='cost')
         if cost is None:
-            cost = '<Cost not defined>'
+            cost = ''
         else:
             cost = cost.next.strip()
         # print(cost)
 
         time = title_part.find('time', class_='timeago')
         if time is None:
-            time = '<Time not defined>'
+            time = ''
         else:
             time = time.next.strip()
         # print(time)
 
         resp = title_part.find('i', class_='fa fa-comments-o')
         if resp is None:
-            resp = '<Response not defined>'
+            resp = ''
         else:
             resp = resp.next.replace('Откликов:', '').strip()
         # print(resp)
 
         term = footer_part.find('div', class_='term')
         if term is None:
-            term = '<Term not defined>'
+            term = ''
         else:
             term = term.next.strip()
         # print(term)
