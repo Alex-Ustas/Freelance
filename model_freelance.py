@@ -3,6 +3,7 @@
 import requests
 from bs4 import BeautifulSoup as bs
 import common_lib as lib
+import re
 
 
 def parse_freelance(new_tasks: dict, method=1) -> (dict, int, str):
@@ -23,7 +24,7 @@ def parse_freelance(new_tasks: dict, method=1) -> (dict, int, str):
         except Exception as err:
             return new_tasks, 0, f'Freelance: unexpected {err=}, {type(err)=}\n'
     else:
-        html = open(r'C:\Temp\Python\freelance.html', encoding='utf8').read()
+        html = open(r'C:\Temp\Python\freelance2.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
 
     content = soup.find('div', class_='projects m-t-2')
@@ -32,7 +33,7 @@ def parse_freelance(new_tasks: dict, method=1) -> (dict, int, str):
         print(rq.status_code, rq.reason)
         exit()
 
-    tasks = content.find_all('div', class_='box-shadow project')
+    tasks = content.find_all('div', class_=re.compile('box-shadow project'))
 
     for task in tasks:
         title_part = task.find('div', class_='box-title')
