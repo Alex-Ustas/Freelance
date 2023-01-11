@@ -1,87 +1,84 @@
 # Парсинг freelance.habr.com
 
-import requests as rq
-import html2text as ht
-
-
-def parse_task_habr(text: str) -> (str, str):
-    """Check task id and task name"""
-    n1 = text.find('[')
-    n2 = text.find(']')
-    temp = text.split('/tasks/')
-    task_id = '0'
-    if len(temp) > 1:
-        task_id = temp[len(temp)-1][:-1]
-    title = '[Task not detected]' if n1 == 0 or n2 == 0 else text[n1 + 1:n2].strip()
-    return title, task_id
-
-
-def parse_response_habr(text: str) -> (int, int, str):
-    nums = text.split('_')
-    selected = True
-    time = list()
-    response = 0
-    view = 0
-    if len(nums) == 3:
-        response = 0
-        view = nums[1] if 'просмотр' in text else 0
-        time = nums[2].strip().split()
-    elif len(nums) > 3:
-        response = nums[1] if 'отклик' in text else 0
-        view = nums[3] if 'просмотр' in text else 0
-        time = nums[4].strip().split()
-    else:
-        selected = False
-    if selected:
-        time.pop(0)
-        time = ' '.join(time)
-        return int(response), int(view), time
-    else:
-        return 0, 0, text.strip()
+import requests
+from bs4 import BeautifulSoup as bs
+import re
 
 
 def parse_habr(method=1) -> (dict, str):
     """Parse habr.com"""
     data = dict()
+    rq = None
     if method == 1:
+        href = 'https://freelance.habr.com/tasks'
+        headers = \
+            {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
+                 (KHTML, like Gecko) Chrome/108.0.0.0 Safari/537.36'
+            }
         try:
-            s = rq.get('https://freelance.habr.com/tasks')
-            text = ht.html2text(s.text)
+            rq = requests.get(href, headers=headers)
+            soup = bs(rq.text, 'html.parser')
         except Exception as err:
-            return data, f'Habr: unexpected {err=}, {type(err)=}\n'
+            return data, f'Freelance: unexpected {err=}, {type(err)=}\n'
     else:
-        html = open(r'C:\Temp\Python\habr_html.txt', encoding='utf8').read()
-        text = ht.html2text(html)
-    text = text.split('\n')
+        html = open(r'C:\Temp\Python\habr.html', encoding='utf8').read()
+        soup = bs(html, 'html.parser')
 
     # Generate dictionary
-    nchar = 0
-    while True:
-        stop = False
-        while '/tasks/' not in text[nchar]:
-            if '<- Сюда' in text[nchar]:
-                stop = True
-                break
-            nchar += 1
-            if nchar >= len(text):
-                break
-        if stop:
-            break
+    content = soup.find('ul', class_='content-list content-list_tasks')
+    # print(content)
+    if content is None:
+        return data, f'Habr: content is empty!\nstatus={rq.status_code}, reason={rq.reason}\n'
 
-        title, task_id = parse_task_habr(text[nchar])
-        response, view, time = parse_response_habr(text[nchar + 2])
-        nchar += 3
-
-        while 'руб.' not in text[nchar] and 'договорная' not in text[nchar]:
-            nchar += 1
-        if 'руб.' in text[nchar]:
-            cost = text[nchar]
-            cost = cost[0:cost.find('руб.')].replace(' ', '')
+    tasks = content.find_all('li', class_=re.compile('content-list__item'))
+    for task in tasks:
+        title = task.find('a')
+        if title is None:
+            title = '[Title not defined]'
+            task_id = '0'
+            link = ''
         else:
-            cost = 'договорная'
-        link = 'https://freelance.habr.com/tasks/' + task_id if task_id != '0' else ''
-        data[task_id] = ['Habr', title, '', cost, time, str(response), str(view), link]
+            task_id = title.get('href')
+            task_id = task_id[task_id.rfind('/') + 1:]
+            title = title.next.strip()
+            link = 'https://freelance.habr.com/tasks/' + task_id
         # print(task_id, title)
+
+        cost = task.find('span', class_='count')
+        if cost is None:
+            cost = task.find('span', class_='negotiated_price')
+            if cost is None:
+                cost = ''
+            else:
+                cost = cost.next.strip().lower()
+        else:
+            cost = cost.next.strip().lower()
+        # print(cost)
+
+        time = task.find('span', class_='params__published-at icon_task_publish_at')
+        if time is None:
+            time = ''
+        else:
+            time = time.find('span')
+            if time is None:
+                time = ''
+            else:
+                time = time.next.strip().lower()
+        # print(time)
+
+        resp = task.find('span', class_='params__responses icon_task_responses')
+        if resp is None:
+            resp = ''
+        else:
+            resp = resp.find('i', class_='params__count')
+            if resp is None:
+                resp = ''
+            else:
+                resp = resp.next.strip()
+        # print(resp)
+
+        data[task_id] = ['Habr', title, '', cost, time, resp, '', link]
 
     return data, ''
 
