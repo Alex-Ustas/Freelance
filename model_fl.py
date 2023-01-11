@@ -2,14 +2,12 @@
 
 import requests
 from bs4 import BeautifulSoup as bs
-import common_lib as lib
 
 
-def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
+def parse_fl(method=1) -> (dict, str):
     """Parse fl.ru"""
     data = dict()
     rq = None
-    new = 0
     if method == 1:
         href = 'https://www.fl.ru/projects/'
         headers = \
@@ -21,21 +19,18 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
             rq = requests.get(href, headers=headers)
             soup = bs(rq.text, 'html.parser')
         except Exception as err:
-            return new_tasks, 0, f'FL: unexpected {err=}, {type(err)=}\n'
+            return data, f'FL: unexpected {err=}, {type(err)=}\n'
     else:
         html = open(r'C:\Temp\Python\fl2.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
 
     content = soup.find('div', class_='b-page__lenta')
-    # print(content)
     if content is None:
-        print(rq.status_code, rq.reason)
-        exit()
+        return data, f'FL: status={rq.status_code}, reason={rq.reason}\n'
 
     tasks = content.find_all('div', class_='b-post__grid')
 
     for ref in tasks:
-        # print(ref)
         title = ref.find('a')
         if title is None:
             title = '[Title not defined]'
@@ -45,7 +40,7 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
             task_id = title.get('name')[3:]
             link = 'https://www.fl.ru' + title.get('href')
             title = title.next.strip()
-        # print(title)
+        # print(task_id, title)
         # print(link)
 
         scripts = ref.find_all('script')
@@ -66,8 +61,8 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
                     cost = str(cost.next.next.next.next).strip()
                 if cost.isdigit():
                     cost = '{:,.0f}'.format(int(cost))
-                price = cost + ' ' + curr
-        # print('\t' + price)
+                price = (cost + ' ' + curr).strip().lower()
+        # print(price)
 
         info = ''
         if len(scripts) > 0:
@@ -87,8 +82,7 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
                 resp = ''
             else:
                 resp = resp.find('a').next.next.strip().lower()
-        # print('\t' + resp)
-        data[task_id] = [title, price, info, resp]
+        # print(resp)
 
         time = ''
         if len(scripts) > 1:
@@ -102,20 +96,11 @@ def parse_fl(new_tasks: dict, method=1) -> (dict, int, str):
                     time = ''
                 else:
                     time = str(time.next).strip() + ' ' + str(time.next.next).strip()
-        # print('\t' + time)
-        data[task_id] = [title, price, info, resp, time, link]
+        # print(time)
+        data[task_id] = ['FL', title, info, price, time, resp, '', link]
 
-    # Check new projects
-    for key, data_list in data.items():
-        if key not in new_tasks.keys():
-            for word in lib.KEYWORDS.split(','):
-                if word in data_list[0].lower() or word in data_list[2].lower():
-                    new_tasks[key] = ['FL', data_list[0], data_list[2], data_list[1],
-                                      data_list[4], data_list[3], '', data_list[5], 'y']
-                    new = 1
-
-    return new_tasks, new, ''
+    return data, ''
 
 
 if __name__ == '__main__':
-    dummy = parse_fl(dict(), 0)
+    dummy = parse_fl(0)

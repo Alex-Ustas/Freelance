@@ -7,6 +7,7 @@ import history
 import model_fl as fl
 import model_habr as habr
 import model_freelance as free
+import common_lib as lib
 
 import telebot
 import bot_token
@@ -43,6 +44,19 @@ def beep_beep():
     winsound.Beep(1500, 400)
 
 
+def check_new_tasks(all_tasks: dict, check_tasks: dict) -> (dict, int):
+    new = 0
+    for key, task in check_tasks.items():
+        if key not in all_tasks.keys():
+            for word in lib.KEYWORDS.split(','):
+                if word in task[1].lower() or word in task[2].lower():
+                    item = [task[i] for i in range(0, 8)]
+                    item.append('y')
+                    all_tasks[key] = item
+                    new = 1
+    return all_tasks, new
+
+
 @bot.message_handler(commands=['start', 'help'])
 def bot_description(message):
     """Show help for bot using and add buttons"""
@@ -65,7 +79,7 @@ def get_keywords(message):
 @bot.message_handler(commands=['go'])
 def run_parser(message):
     """Parse platforms and show new tasks"""
-    new_tasks = history.get_history()
+    all_tasks = history.get_history()
     # - - id (key)
     # 0 - platform (fl, kwork, habr, freelance)
     # 1 - task name
@@ -78,18 +92,24 @@ def run_parser(message):
     # 8 - flag for new task (y/n)
     i = 0.5
     while True:
-        new_tasks, new1, err1 = habr.parse_habr(new_tasks)
-        new_tasks, new2, err2 = fl.parse_fl(new_tasks)
-        new_tasks, new3, err3 = free.parse_freelance(new_tasks)
+        tasks, err1 = habr.parse_habr()
+        all_tasks, new1 = check_new_tasks(all_tasks, tasks)
+
+        tasks, err2 = fl.parse_fl()
+        all_tasks, new2 = check_new_tasks(all_tasks, tasks)
+
+        tasks, err3 = free.parse_freelance()
+        all_tasks, new3 = check_new_tasks(all_tasks, tasks)
+
         new = new1 + new2 + new3
         error = err1 + err2 + err3
         if new:
             beep_beep()
-            view.show_tasks(new_tasks)
-            view.show_for_bot(bot, message, new_tasks)
-            for key in new_tasks.keys():
-                new_tasks[key][8] = 'n'
-            history.write_tasks(new_tasks)
+            view.show_tasks(all_tasks)
+            view.show_for_bot(bot, message, all_tasks)
+            for key in all_tasks.keys():
+                all_tasks[key][8] = 'n'
+            history.write_tasks(all_tasks)
         if error:
             beep_beep()
             view.show_error(bot, message, error)

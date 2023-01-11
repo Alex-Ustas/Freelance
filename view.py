@@ -84,7 +84,7 @@ def show_for_bot(bot, message, tasks: dict, new_only=True):
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
             msg = '<b>' + data[0] + ':</b> ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
-            msg += '_' * 60 + '\n'
+            msg += '_' * 40 + '\n'
             if data[2]:
                 msg += mark_words(data[2], 'bot') + '\n'
             if data[3]:
