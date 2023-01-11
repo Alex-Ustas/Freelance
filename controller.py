@@ -44,17 +44,18 @@ def beep_beep():
     winsound.Beep(1500, 400)
 
 
-def check_new_tasks(all_tasks: dict, check_tasks: dict) -> (dict, int):
+def check_new_tasks(all_tasks: dict, check_tasks: dict) -> int:
     new = 0
     for key, task in check_tasks.items():
         if key not in all_tasks.keys():
             for word in lib.KEYWORDS.split(','):
                 if word in task[1].lower() or word in task[2].lower():
-                    item = [task[i] for i in range(0, 8)]
+                    item = [task[i] for i in range(len(task))]
                     item.append('y')
                     all_tasks[key] = item
                     new = 1
-    return all_tasks, new
+                    break
+    return new
 
 
 @bot.message_handler(commands=['start', 'help'])
@@ -93,13 +94,13 @@ def run_parser(message):
     i = 0.5
     while True:
         tasks, err1 = habr.parse_habr()
-        all_tasks, new1 = check_new_tasks(all_tasks, tasks)
+        new1 = check_new_tasks(all_tasks, tasks)
 
         tasks, err2 = fl.parse_fl()
-        all_tasks, new2 = check_new_tasks(all_tasks, tasks)
+        new2 = check_new_tasks(all_tasks, tasks)
 
         tasks, err3 = free.parse_freelance()
-        all_tasks, new3 = check_new_tasks(all_tasks, tasks)
+        new3 = check_new_tasks(all_tasks, tasks)
 
         new = new1 + new2 + new3
         error = err1 + err2 + err3
