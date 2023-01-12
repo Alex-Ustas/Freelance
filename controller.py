@@ -1,14 +1,23 @@
 # Telegram: https://t.me/AlexUstas0
 
-import winsound
-import time
+# TODO:
+#   - Rename history -> loader
+#   - Move KEYWORDS to file and handle it in loader
+#   - Add/delete keyword by command in bot
+#   - Create platform lib in file - json? (flag active, color)
+#   - Realize stopper for platforms
+#   - Add model_kwork
+#   - Parse certain task with command /task <id> and change record in history for it
+
 import view
-import history
+import loader
 import model_fl as fl
 import model_habr as habr
 import model_freelance as free
 import common_lib as lib
 
+import winsound
+import time
 import telebot
 import bot_token
 from telebot import types
@@ -62,11 +71,11 @@ def check_new_tasks(all_tasks: dict, check_tasks: dict) -> int:
 def bot_description(message):
     """Show help for bot using and add buttons"""
     markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-    itembtn1 = types.KeyboardButton('/help')
-    itembtn2 = types.KeyboardButton('/go')
-    itembtn3 = types.KeyboardButton('/keywords')
-    itembtn4 = types.KeyboardButton('/history')
-    markup.add(itembtn1, itembtn2, itembtn3, itembtn4)
+    button1 = types.KeyboardButton('/help')
+    button2 = types.KeyboardButton('/go')
+    button3 = types.KeyboardButton('/keywords')
+    button4 = types.KeyboardButton('/history')
+    markup.add(button1, button2, button3, button4)
     bot.send_message(message.chat.id, description, parse_mode='Markdown', reply_markup=markup)
 
 
@@ -80,7 +89,7 @@ def get_keywords(message):
 @bot.message_handler(commands=['go'])
 def run_parser(message):
     """Parse platforms and show new tasks"""
-    all_tasks = history.get_history()
+    all_tasks = loader.get_history()
     # - - id (key)
     # 0 - platform (fl, kwork, habr, freelance)
     # 1 - task name
@@ -110,7 +119,7 @@ def run_parser(message):
             view.show_for_bot(bot, message, all_tasks)
             for key in all_tasks.keys():
                 all_tasks[key][8] = 'n'
-            history.write_tasks(all_tasks)
+            loader.write_tasks(all_tasks)
         if error:
             beep_beep()
             view.show_error(bot, message, error)
@@ -123,7 +132,7 @@ def run_parser(message):
 @bot.message_handler(commands=['history'])
 def get_history(message):
     """Get several last tasks from file"""
-    tasks = history.get_history(5)
+    tasks = loader.get_history(5)
     bot.send_message(message.chat.id, f'Последние *{len(tasks)}* задач:', parse_mode='Markdown')
     view.show_for_bot(bot, message, tasks, False)
 
@@ -135,7 +144,7 @@ def get_task(message):
     if len(text) == 1:
         bot.reply_to(message, 'Для получения информации укажите *id* задания', parse_mode='Markdown')
     else:
-        task = history.get_task(text[1])
+        task = loader.get_task(text[1])
         if task:
             view.show_for_bot(bot, message, task, False)
         else:
