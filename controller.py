@@ -1,13 +1,11 @@
 # Telegram: https://t.me/AlexUstas0
 
 # TODO:
-#   + Rename history -> loader
-#   + Move KEYWORDS to file and handle it in loader
-#   + Add/delete keyword by command in bot
 #   - Create platform lib in file - json? (flag active, color)
 #   - Realize stopper for platforms
 #   - Add model_kwork
 #   - Parse certain task with command /task <id> and change record in history for it
+#   + fix: Убрать <> из названия, описания задачи перед показом в телеграм
 
 import view
 import loader

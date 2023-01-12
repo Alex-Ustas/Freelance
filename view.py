@@ -25,6 +25,12 @@ def mark_words(exp: str, keywords: list, msg_type='terminal') -> str:
     return exp
 
 
+def replacer(text: str, what_to_replace: str) -> str:
+    for sym in what_to_replace:
+        text = text.replace(sym, '')
+    return text
+
+
 def split_sentence(text: str, length: int, start_with='') -> str:
     """Split long sentence to several lines"""
     new = ''
@@ -77,10 +83,11 @@ def show_for_bot(bot, message, tasks: dict, keywords: list, new_only=True):
     """Show detailed info regarding every task in telegram"""
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
-            msg = '<b>' + data[0] + ':</b> ' + key + ' ' + mark_words(data[1], keywords, 'bot') + '\n'
+            msg = '<b>' + data[0] + ':</b> ' + key + ' ' + \
+                  replacer(mark_words(data[1], keywords, 'bot'), '<>') + '\n'
             msg += '_' * 40 + '\n'
             if data[2]:
-                msg += mark_words(data[2], keywords, 'bot') + '\n'
+                msg += replacer(mark_words(data[2], keywords, 'bot'), '<>') + '\n'
             if data[3]:
                 msg += f'Стоимость: <b>{data[3]}</b>\n'
             if data[4]:

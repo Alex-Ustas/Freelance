@@ -1,0 +1,6 @@
+{
+  "FL": {"color":  "green", "enable":  "y", "link":  "https://www.fl.ru/projects/"},
+  "Habr": {"color":  "violet", "enable":  "y", "link":  "https://freelance.habr.com/tasks"},
+  "Kwork": {"color":  "turquoise", "enable":  "n", "link":  "https://kwork.ru/projects"},
+  "Freelance": {"color":  "blue", "enable":  "y", "link":  "https://freelance.ru/project/search"}
+}
