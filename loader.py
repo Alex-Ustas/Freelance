@@ -2,13 +2,15 @@
 # Handle file with keywords
 
 import os
+import json
 from datetime import datetime as dt
 
 LOG_FILE = 'history.csv'
 KEYWORDS = 'keywords.txt'
+PLATFORM = 'platform.json'
 
 
-def write_tasks(tasks: dict):
+def save_tasks(tasks: dict):
     """Write tasks to file"""
     if os.path.exists(LOG_FILE):
         file = open(LOG_FILE, 'a', encoding='utf-8')
@@ -93,3 +95,25 @@ def change_keywords(word: str, action: str) -> str:
         with open(KEYWORDS, 'w', encoding='utf-8') as file:
             file.write(','.join(keywords))
     return result
+
+
+def get_platform() -> dict:
+    """Get all settings for all platforms from file"""
+    if not os.path.exists(PLATFORM):
+        return dict()
+    with open(PLATFORM, 'r', encoding='utf-8') as file:
+        platform = file.read()
+    return json.loads(platform)
+
+
+def set_platform(name: str, key: str, value: str):
+    """Set setting for platform and save in file"""
+    old = get_platform()
+    for platform in old.keys():
+        if platform == name:
+            for param in old[platform].keys():
+                if param == key:
+                    old[platform][param] = value
+                    break
+    with open(PLATFORM, 'w', encoding='utf-8') as file:
+        json.dump(old, file)

@@ -1,7 +1,7 @@
 # Telegram: https://t.me/AlexUstas0
 
 # TODO:
-#   - Create platform lib in file - json? (flag active, color)
+#   - Create platform lib in file - json? (enable flag, color, link)
 #   - Realize stopper for platforms
 #   - Add model_kwork
 #   - Parse certain task with command /task <id> and change record in history for it
@@ -28,11 +28,11 @@ description = """
 Бот предназначен для обработки фриланс
 сервисов для поиска задач по
 ключевым словам.
-Список ключевых слов: [/keywords]
 Запустить поиск задач: [/go]
+Список ключевых слов: [/keywords]
 Можно просмотреть последние
 5 задач: [/history]
-Информация по заданию: [/task] *id* 
+Информация по заданию: [/task] *<id>*
 Сайты:
 [FL](https://www.fl.ru/projects/)
 [Habr](https://freelance.habr.com/tasks)
@@ -50,8 +50,9 @@ def beep_beep():
     winsound.Beep(1500, 400)
 
 
-def check_new_tasks(all_tasks: dict, check_tasks: dict, keywords: list) -> int:
+def check_new_tasks(all_tasks: dict, check_tasks: dict) -> int:
     new = 0
+    keywords = loader.get_keywords()
     for key, task in check_tasks.items():
         if key not in all_tasks.keys():
             for word in keywords:
@@ -111,26 +112,24 @@ def run_parser(message):
     # 8 - flag for new task (y/n)
     i = 0.5
     while True:
-        keywords = loader.get_keywords()
-
         tasks, err1 = habr.parse_habr()
-        new1 = check_new_tasks(all_tasks, tasks, keywords)
+        new1 = check_new_tasks(all_tasks, tasks)
 
         tasks, err2 = fl.parse_fl()
-        new2 = check_new_tasks(all_tasks, tasks, keywords)
+        new2 = check_new_tasks(all_tasks, tasks)
 
         tasks, err3 = free.parse_freelance()
-        new3 = check_new_tasks(all_tasks, tasks, keywords)
+        new3 = check_new_tasks(all_tasks, tasks)
 
         new = new1 + new2 + new3
         error = err1 + err2 + err3
         if new:
             beep_beep()
-            view.show_tasks(all_tasks, keywords)
-            view.show_for_bot(bot, message, all_tasks, keywords)
+            view.show_tasks(all_tasks)
+            view.show_for_bot(bot, message, all_tasks)
             for key in all_tasks.keys():
                 all_tasks[key][8] = 'n'
-            loader.write_tasks(all_tasks)
+            loader.save_tasks(all_tasks)
         if error:
             beep_beep()
             view.show_error(bot, message, error)
@@ -144,9 +143,8 @@ def run_parser(message):
 def get_history(message):
     """Get several last tasks from file"""
     tasks = loader.get_history(5)
-    keywords = loader.get_keywords()
     bot.send_message(message.chat.id, f'Последние *{len(tasks)}* задач:', parse_mode='Markdown')
-    view.show_for_bot(bot, message, tasks, keywords, False)
+    view.show_for_bot(bot, message, tasks, False)
 
 
 @bot.message_handler(commands=['task'], content_types=['text'])
@@ -158,8 +156,7 @@ def get_task(message):
     else:
         task = loader.get_task(text[1])
         if task:
-            keywords = loader.get_keywords()
-            view.show_for_bot(bot, message, task, keywords, False)
+            view.show_for_bot(bot, message, task, False)
         else:
             bot.reply_to(message, f'Задание *{text[1]}* не найдено', parse_mode='Markdown')
 

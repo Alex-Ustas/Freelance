@@ -1,5 +1,8 @@
 # Show text in terminal and telegram
 
+import loader
+
+
 def colored_text(text: str, color: str) -> str:
     colors = {'black': '30',
               'red': '31',
@@ -54,8 +57,9 @@ def split_sentence(text: str, length: int, start_with='') -> str:
     return new
 
 
-def show_tasks(tasks: dict, keywords: list, new_only=True):
+def show_tasks(tasks: dict, new_only=True):
     """Show detailed info regarding every task"""
+    keywords = loader.get_keywords()
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
             title = data[0]
@@ -79,15 +83,16 @@ def show_tasks(tasks: dict, keywords: list, new_only=True):
                 print(f'\t{data[6]}')
 
 
-def show_for_bot(bot, message, tasks: dict, keywords: list, new_only=True):
+def show_for_bot(bot, message, tasks: dict, new_only=True):
     """Show detailed info regarding every task in telegram"""
+    keywords = loader.get_keywords()
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
             msg = '<b>' + data[0] + ':</b> ' + key + ' ' + \
-                  replacer(mark_words(data[1], keywords, 'bot'), '<>') + '\n'
+                  mark_words(replacer(data[1], '<>'), keywords, 'bot') + '\n'
             msg += '_' * 40 + '\n'
             if data[2]:
-                msg += replacer(mark_words(data[2], keywords, 'bot'), '<>') + '\n'
+                msg += mark_words(replacer(data[2], '<>'), keywords, 'bot') + '\n'
             if data[3]:
                 msg += f'Стоимость: <b>{data[3]}</b>\n'
             if data[4]:
