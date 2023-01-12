@@ -1,8 +1,11 @@
 # Store every record for tasks in history.csv file
+# Handle file with keywords
+
 import os
 from datetime import datetime as dt
 
 LOG_FILE = 'history.csv'
+KEYWORDS = 'keywords.txt'
 
 
 def write_tasks(tasks: dict):
@@ -57,3 +60,36 @@ def get_task(task_id: str) -> dict:
                               items[7], items[8], items[9], items[10]]
             break
     return task
+
+
+def get_keywords() -> list:
+    """Get keywords from file"""
+    if not os.path.exists(KEYWORDS):
+        return list()
+    with open(KEYWORDS, 'r', encoding='utf-8') as file:
+        keyword = file.readline()
+    return keyword.replace('\n', '').split(',')
+
+
+def change_keywords(word: str, action: str) -> str:
+    """Add/delete keyword in file"""
+    result = ''
+    keywords = get_keywords()
+    action = action.strip().lower()
+    word = word.strip().lower()
+    if action == 'add':
+        if word in keywords:
+            result = f'Слово {word} уже есть в списке'
+        else:
+            keywords.append(word)
+    elif action == 'del':
+        if word in keywords:
+            keywords.remove(word)
+        else:
+            result = f'Слово {word} не найдено, удаление невозможно'
+    else:
+        result = 'Операция не определена'
+    if result == '':
+        with open(KEYWORDS, 'w', encoding='utf-8') as file:
+            file.write(','.join(keywords))
+    return result

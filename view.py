@@ -1,9 +1,4 @@
-import common_lib as lib
-
-
-def get_keywords() -> str:
-    return lib.KEYWORDS.replace(",", "\n")
-
+# Show text in terminal and telegram
 
 def colored_text(text: str, color: str) -> str:
     colors = {'black': '30',
@@ -17,10 +12,9 @@ def colored_text(text: str, color: str) -> str:
     return f'\033[1m\033[{colors[color]}m{text}\033[0m'
 
 
-def mark_words(exp: str, msg_type='terminal', keyword=lib.KEYWORDS) -> str:
+def mark_words(exp: str, keywords: list, msg_type='terminal') -> str:
     """Mark keywords in sentence by specified color or bold for msg_type=bot"""
-    keyword = keyword.split(',')
-    for word in keyword:
+    for word in keywords:
         if word in exp.lower():
             pos = exp.lower().find(word)
             cut = exp[pos:pos + len(word)]
@@ -54,7 +48,7 @@ def split_sentence(text: str, length: int, start_with='') -> str:
     return new
 
 
-def show_tasks(tasks: dict, new_only=True):
+def show_tasks(tasks: dict, keywords: list, new_only=True):
     """Show detailed info regarding every task"""
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
@@ -65,10 +59,10 @@ def show_tasks(tasks: dict, new_only=True):
                 title = colored_text(title + ':', 'green')
             elif title == 'Freelance':
                 title = colored_text(title + ':', 'blue')
-            title += ' ' + split_sentence(key + ' ' + mark_words(data[1]), 110)
+            title += ' ' + split_sentence(key + ' ' + mark_words(data[1], keywords), 110)
             print(title)
             if data[2]:
-                print(split_sentence(mark_words(data[2]), 120, '\t'))
+                print(split_sentence(mark_words(data[2], keywords), 120, '\t'))
             if data[3]:
                 print(f'\tСтоимость: {data[3]}')
             if data[4]:
@@ -79,14 +73,14 @@ def show_tasks(tasks: dict, new_only=True):
                 print(f'\t{data[6]}')
 
 
-def show_for_bot(bot, message, tasks: dict, new_only=True):
+def show_for_bot(bot, message, tasks: dict, keywords: list, new_only=True):
     """Show detailed info regarding every task in telegram"""
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
-            msg = '<b>' + data[0] + ':</b> ' + key + ' ' + mark_words(data[1], 'bot') + '\n'
+            msg = '<b>' + data[0] + ':</b> ' + key + ' ' + mark_words(data[1], keywords, 'bot') + '\n'
             msg += '_' * 40 + '\n'
             if data[2]:
-                msg += mark_words(data[2], 'bot') + '\n'
+                msg += mark_words(data[2], keywords, 'bot') + '\n'
             if data[3]:
                 msg += f'Стоимость: <b>{data[3]}</b>\n'
             if data[4]:
