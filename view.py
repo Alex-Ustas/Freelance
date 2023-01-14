@@ -60,15 +60,12 @@ def split_sentence(text: str, length: int, start_with='') -> str:
 def show_tasks(tasks: dict, new_only=True):
     """Show detailed info regarding every task"""
     keywords = loader.get_keywords()
+    platform = loader.get_platform()
     for key, data in tasks.items():
         if not new_only or (new_only and data[8] == 'y'):
             title = data[0]
-            if title == 'Habr':
-                title = colored_text(title + ':', 'violet')
-            elif title == 'FL':
-                title = colored_text(title + ':', 'green')
-            elif title == 'Freelance':
-                title = colored_text(title + ':', 'blue')
+            if title in platform.keys():
+                title = colored_text(title + ':', platform[title]['color'])
             title += ' ' + split_sentence(key + ' ' + mark_words(data[1], keywords), 110)
             print(title)
             if data[2]:

@@ -1,11 +1,13 @@
 # Telegram: https://t.me/AlexUstas0
 
 # TODO:
-#   - Create platform lib in file - json? (enable flag, color, link)
-#   - Realize stopper for platforms
+#   + Create platform lib in file - json? (enable flag, color, link)
+#   + /sites - get data from platform.json
+#   + Realize stopper for platforms
 #   - Add model_kwork
 #   - Parse certain task with command /task <id> and change record in history for it
 #   + fix: Убрать <> из названия, описания задачи перед показом в телеграм
+#   - Clear history from closed tasks
 
 import view
 import loader
@@ -17,7 +19,6 @@ import winsound
 import time
 import telebot
 import bot_token
-from telebot import types
 
 # Name: AlexFreelance
 # Bot name: alex_freelance_bot
@@ -28,16 +29,13 @@ description = """
 Бот предназначен для обработки фриланс
 сервисов для поиска задач по
 ключевым словам.
+----------------------------------------
 Запустить поиск задач: [/go]
 Список ключевых слов: [/keywords]
 Можно просмотреть последние
 5 задач: [/history]
 Информация по заданию: [/task] *<id>*
-Сайты:
-[FL](https://www.fl.ru/projects/)
-[Habr](https://freelance.habr.com/tasks)
-[Kwork](https://kwork.ru/projects)
-[Freelance](https://freelance.ru/project/search)
+Информация по сайтам: [/sites]
 Эта справка: [/help]"""
 
 
@@ -68,11 +66,11 @@ def check_new_tasks(all_tasks: dict, check_tasks: dict) -> int:
 @bot.message_handler(commands=['start', 'help'])
 def bot_description(message):
     """Show help for bot using and add buttons"""
-    markup = types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
-    button1 = types.KeyboardButton('/help')
-    button2 = types.KeyboardButton('/go')
-    button3 = types.KeyboardButton('/keywords')
-    button4 = types.KeyboardButton('/history')
+    markup = telebot.types.ReplyKeyboardMarkup(resize_keyboard=True, row_width=4)
+    button1 = telebot.types.KeyboardButton('/help')
+    button2 = telebot.types.KeyboardButton('/go')
+    button3 = telebot.types.KeyboardButton('/keywords')
+    button4 = telebot.types.KeyboardButton('/history')
     markup.add(button1, button2, button3, button4)
     bot.send_message(message.chat.id, description, parse_mode='Markdown', reply_markup=markup)
 
@@ -112,13 +110,14 @@ def run_parser(message):
     # 8 - flag for new task (y/n)
     i = 0.5
     while True:
-        tasks, err1 = habr.parse_habr()
+        platform = loader.get_platform()
+        tasks, err1 = habr.parse_habr(platform['Habr'])
         new1 = check_new_tasks(all_tasks, tasks)
 
-        tasks, err2 = fl.parse_fl()
+        tasks, err2 = fl.parse_fl(platform['FL'])
         new2 = check_new_tasks(all_tasks, tasks)
 
-        tasks, err3 = free.parse_freelance()
+        tasks, err3 = free.parse_freelance(platform['Freelance'])
         new3 = check_new_tasks(all_tasks, tasks)
 
         new = new1 + new2 + new3
@@ -159,6 +158,53 @@ def get_task(message):
             view.show_for_bot(bot, message, task, False)
         else:
             bot.reply_to(message, f'Задание *{text[1]}* не найдено', parse_mode='Markdown')
+
+
+@bot.message_handler(commands=['sites'])
+def show_sites(message):
+    """Show info about sites"""
+    platform = loader.get_platform()
+    info = '*Сайты:*\n'
+    for name, param in platform.items():
+        link = param['link']
+        enable = '- *включен*' if param['enable'] == 'y' else '- _отключен_'
+        info += f'[{name}]({link}) {enable}\n'
+    info += '\nВключить/отключить парсинг сайта:\n[/enable] *<site> <y/n>*\n' + \
+            'Включить/отключить парсинг всех сайтов: [/enable] *all <y/n>*'
+    bot.send_message(message.chat.id, info, parse_mode='Markdown')
+
+
+@bot.message_handler(commands=['enable'], content_types=['text'])
+def enable_sites(message):
+    """Enable/disable sites"""
+    text = message.text.split()
+    info = 'Включить/отключить парсинг сайта:\n[/enable] *<site> <y/n>*\n' + \
+           'Включить/отключить парсинг всех сайтов: [/enable] *all <y/n>*'
+    if len(text) == 1:
+        bot.reply_to(message, info, parse_mode='Markdown')
+    elif len(text) == 3:
+        flag = text[2]
+        if flag != 'y' and flag != 'n':
+            info = 'Параметр должен быть *y* или *n*\n' + info
+            bot.reply_to(message, info, parse_mode='Markdown')
+        else:
+            platform = loader.get_platform()
+            done = False
+            for name, param in platform.items():
+                if text[1] == 'all':
+                    loader.set_platform(name, 'enable', flag)
+                    done = True
+                elif text[1] == name:
+                    loader.set_platform(name, 'enable', flag)
+                    done = True
+                    break
+            if done:
+                bot.reply_to(message, 'Выполнено')
+            else:
+                bot.reply_to(message, f'Сайт *{text[1]}* не определен', parse_mode='Markdown')
+    else:
+        info = 'Неверная команда\n' + info
+        bot.reply_to(message, info, parse_mode='Markdown')
 
 
 bot.infinity_polling()

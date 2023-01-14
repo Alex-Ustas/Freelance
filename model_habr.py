@@ -5,12 +5,14 @@ from bs4 import BeautifulSoup as bs
 import re
 
 
-def parse_habr(method=1) -> (dict, str):
+def parse_habr(platform: dict, method=1) -> (dict, str):
     """Parse habr.com"""
     data = dict()
+    if platform['enable'] == 'n':
+        return data, ''
     rq = None
     if method == 1:
-        href = 'https://freelance.habr.com/tasks'
+        href = platform['link']
         headers = \
             {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
@@ -84,4 +86,5 @@ def parse_habr(method=1) -> (dict, str):
 
 
 if __name__ == '__main__':
-    dummy = parse_habr(0)
+    settings = {"enable": "y", "link": "https://freelance.habr.com/tasks"}
+    dummy = parse_habr(settings, 0)

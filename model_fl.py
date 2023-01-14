@@ -4,12 +4,14 @@ import requests
 from bs4 import BeautifulSoup as bs
 
 
-def parse_fl(method=1) -> (dict, str):
+def parse_fl(platform: dict, method=1) -> (dict, str):
     """Parse fl.ru"""
     data = dict()
+    if platform['enable'] == 'n':
+        return data, ''
     rq = None
     if method == 1:
-        href = 'https://www.fl.ru/projects/'
+        href = platform['link']
         headers = \
             {
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
@@ -26,7 +28,7 @@ def parse_fl(method=1) -> (dict, str):
 
     content = soup.find('div', class_='b-page__lenta')
     if content is None:
-        return data, f'FL: status={rq.status_code}, reason={rq.reason}\n'
+        return data, f'FL: empty content.\nstatus={rq.status_code}, reason={rq.reason}\n'
 
     tasks = content.find_all('div', class_='b-post__grid')
 
@@ -103,4 +105,5 @@ def parse_fl(method=1) -> (dict, str):
 
 
 if __name__ == '__main__':
-    dummy = parse_fl(0)
+    settings = {"enable": "y", "link": "https://www.fl.ru/projects/"}
+    dummy = parse_fl(settings, 0)

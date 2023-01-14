@@ -82,12 +82,14 @@ def parse_project(tasks, project: dict):
         project[task_id] = ['Freelance', title, info, cost, time, resp, term, link]
 
 
-def parse_freelance(method=1) -> (dict, str):
+def parse_freelance(platform: dict, method=1) -> (dict, str):
     """Parse freelance.ru"""
     data = dict()
+    if platform['enable'] == 'n':
+        return data, ''
     rq = None
     if method == 1:
-        href = 'https://freelance.ru/project/search'
+        href = platform['link']
         headers = \
             {
                 'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36\
@@ -104,7 +106,7 @@ def parse_freelance(method=1) -> (dict, str):
 
     content = soup.find('div', class_='projects m-t-2')
     if content is None:
-        return data, f'Freelance: empty content,\nstatus={rq.status_code}, reason={rq.reason}\n'
+        return data, f'Freelance: empty content.\nstatus={rq.status_code}, reason={rq.reason}\n'
 
     tasks = content.find_all('div', class_='project')
     parse_project(tasks, data)
@@ -115,4 +117,5 @@ def parse_freelance(method=1) -> (dict, str):
 
 
 if __name__ == '__main__':
-    dummy = parse_freelance(0)
+    settings = {"enable": "y", "link": "https://freelance.ru/project/search"}
+    dummy = parse_freelance(settings, 0)
