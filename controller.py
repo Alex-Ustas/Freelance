@@ -1,19 +1,18 @@
 # Telegram: https://t.me/AlexUstas0
 
 # TODO:
-#   + Create platform lib in file - json? (enable flag, color, link)
-#   + /sites - get data from platform.json
-#   + Realize stopper for platforms
-#   - Add model_kwork
+#   + Add model_kwork
 #   - Parse certain task with command /task <id> and change record in history for it
-#   + fix: Убрать <> из названия, описания задачи перед показом в телеграм
 #   - Clear history from closed tasks
+#   - Создать асинхронную обработку запросов
+#   - Save logs for users which use bot (datetime, user id, user name, written text)
 
 import view
 import loader
 import model_fl as fl
 import model_habr as habr
 import model_freelance as free
+import model_kwork as kwork
 
 import winsound
 import time
@@ -32,9 +31,8 @@ description = """
 ----------------------------------------
 Запустить поиск задач: [/go]
 Список ключевых слов: [/keywords]
-Можно просмотреть последние
-5 задач: [/history]
-Информация по заданию: [/task] *<id>*
+Последние 5 задач: [/history]
+Информация по заданию: [/task] <id>
 Информация по сайтам: [/sites]
 Эта справка: [/help]"""
 
@@ -49,6 +47,7 @@ def beep_beep():
 
 
 def check_new_tasks(all_tasks: dict, check_tasks: dict) -> int:
+    """Compare all tasks with parsed tasks to identify new tasks"""
     new = 0
     keywords = loader.get_keywords()
     for key, task in check_tasks.items():
@@ -70,7 +69,7 @@ def bot_description(message):
     button1 = telebot.types.KeyboardButton('/help')
     button2 = telebot.types.KeyboardButton('/go')
     button3 = telebot.types.KeyboardButton('/keywords')
-    button4 = telebot.types.KeyboardButton('/history')
+    button4 = telebot.types.KeyboardButton('/sites')
     markup.add(button1, button2, button3, button4)
     bot.send_message(message.chat.id, description, parse_mode='Markdown', reply_markup=markup)
 
@@ -110,18 +109,22 @@ def run_parser(message):
     # 8 - flag for new task (y/n)
     i = 0.5
     while True:
+        error = list('' for j in range(4))
+        new = 0
         platform = loader.get_platform()
-        tasks, err1 = habr.parse_habr(platform['Habr'])
-        new1 = check_new_tasks(all_tasks, tasks)
 
-        tasks, err2 = fl.parse_fl(platform['FL'])
-        new2 = check_new_tasks(all_tasks, tasks)
+        tasks, error[0] = habr.parse_habr(platform['Habr'])
+        new += check_new_tasks(all_tasks, tasks)
 
-        tasks, err3 = free.parse_freelance(platform['Freelance'])
-        new3 = check_new_tasks(all_tasks, tasks)
+        tasks, error[1] = fl.parse_fl(platform['FL'])
+        new += check_new_tasks(all_tasks, tasks)
 
-        new = new1 + new2 + new3
-        error = err1 + err2 + err3
+        tasks, error[2] = free.parse_freelance(platform['Freelance'])
+        new += check_new_tasks(all_tasks, tasks)
+
+        tasks, error[3] = kwork.parse_kwork(platform['Kwork'])
+        new += check_new_tasks(all_tasks, tasks)
+
         if new:
             beep_beep()
             view.show_tasks(all_tasks)
@@ -129,9 +132,12 @@ def run_parser(message):
             for key in all_tasks.keys():
                 all_tasks[key][8] = 'n'
             loader.save_tasks(all_tasks)
+
+        error = ''.join(error)
         if error:
             beep_beep()
             view.show_error(bot, message, error)
+
         if int(i) % 5 == 0 and i - int(i) == 0:
             print(int(i), 'мин.')
         i += 0.5
@@ -194,12 +200,12 @@ def enable_sites(message):
                 if text[1] == 'all':
                     loader.set_platform(name, 'enable', flag)
                     done = True
-                elif text[1] == name:
+                elif text[1].lower() == name.lower():
                     loader.set_platform(name, 'enable', flag)
                     done = True
                     break
             if done:
-                bot.reply_to(message, 'Выполнено')
+                show_sites(message)
             else:
                 bot.reply_to(message, f'Сайт *{text[1]}* не определен', parse_mode='Markdown')
     else:
