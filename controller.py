@@ -53,12 +53,16 @@ def check_new_tasks(all_tasks: dict, check_tasks: dict) -> int:
     for key, task in check_tasks.items():
         if key not in all_tasks.keys():
             for word in keywords:
-                if word in task[1].lower() or word in task[2].lower():
-                    item = [task[i] for i in range(len(task))]
-                    item.append('y')
-                    all_tasks[key] = item
-                    new = 1
-                    break
+                try:
+                    if word in task[1].lower() or word in task[2].lower():
+                        item = [task[i] for i in range(len(task))]
+                        item.append('y')
+                        all_tasks[key] = item
+                        new = 1
+                        break
+                except Exception as err:
+                    print(err)
+                    print(key, task[1], task[2])
     return new
 
 

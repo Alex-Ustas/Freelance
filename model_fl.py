@@ -23,7 +23,7 @@ def parse_fl(platform: dict, method=1) -> (dict, str):
         except Exception as err:
             return data, f'FL: unexpected {err=}, {type(err)=}\n'
     else:
-        html = open(r'C:\Temp\Python\fl2.html', encoding='utf8').read()
+        html = open(r'C:\Temp\Python\fl5.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
 
     content = soup.find('div', class_='b-page__lenta')
@@ -50,17 +50,17 @@ def parse_fl(platform: dict, method=1) -> (dict, str):
         if len(scripts) > 0:
             price = scripts[0]
             if 'По договоренности' in str(price):
-                price = 'По договоренности'
+                price = 'по договоренности'
             else:
                 price = bs(price.next.split("'")[1], 'html.parser').find('div')
                 curr = price.find('span', class_='d-none')
                 curr = '' if curr is None else curr.next.strip()
 
-                cost = price.find('a')
+                cost = price.find('span')
                 if cost is None:
-                    cost = str(price.next).strip()
+                    cost = 'not defined'
                 else:
-                    cost = str(cost.next.next.next.next).strip()
+                    cost = str(cost.next).strip()
                 if cost.isdigit():
                     cost = '{:,.0f}'.format(int(cost))
                 price = (cost + ' ' + curr).strip().lower()
@@ -83,7 +83,9 @@ def parse_fl(platform: dict, method=1) -> (dict, str):
             if resp is None:
                 resp = ''
             else:
-                resp = resp.find('a').next.next.strip().lower()
+                resp = str(resp.find('svg').next_sibling).strip().lower()
+                if ' ' in resp:
+                    resp = resp[:resp.find(' ')]
         # print(resp)
 
         time = ''

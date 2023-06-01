@@ -12,14 +12,16 @@ def parse_kwork(platform: dict, method=1) -> (dict, str):
     if method == 1:
         href = platform['link']
         try:
-            driver = webdriver.Chrome()
+            options = webdriver.ChromeOptions()
+            options.add_argument('--headless')
+            driver = webdriver.Chrome(options=options)
             driver.get(href)
             soup = bs(driver.page_source, 'html.parser')
             driver.quit()
         except Exception as err:
             return data, f'Kwork: unexpected {err=}, {type(err)=}\n'
     else:
-        html = open(r'C:\Temp\Python\Kwork3.html', encoding='utf8').read()
+        html = open(r'C:\Temp\Python\Kwork6.html', encoding='utf8').read()
         soup = bs(html, 'html.parser')
 
     content = soup.find('div', class_='wants-content')
@@ -27,11 +29,14 @@ def parse_kwork(platform: dict, method=1) -> (dict, str):
         return data, 'Kwork: empty content.\n'
 
     tasks = content.find_all('div', class_='card__content pb5')
+    if not tasks:
+        # print(content)
+        return data, 'Kwork: cannot find tasks.\n'
 
     for ref in tasks:
+        # print(ref)
         task_id = ref.parent.get('data-id')
-
-        link = ''
+        link = f'{platform["link"]}{task_id}/view'
         title = ref.find('div', class_='wants-card__left')
         if title is None:
             title = '[Title not defined]'
@@ -40,17 +45,18 @@ def parse_kwork(platform: dict, method=1) -> (dict, str):
             if title is None:
                 title = '[Title not defined]'
             else:
-                link = title.get('href')
                 title = title.next
         # print(task_id, title)
         # print(link)
 
-        info = ref.find('div', class_='d-inline breakwords first-letter')
+        info = ref.find('div', class_='wants-card__space')
         if info is None:
             info = ''
         else:
-            while 'div' in str(info):
+            info = info.next_sibling
+            if '<br/>' == str(info):
                 info = info.next
+            info = '' if info is None else str(info)
         # print(info)
 
         price = ref.find('div', class_='wants-card__header-price wants-card__price m-hidden')
@@ -60,6 +66,10 @@ def parse_kwork(platform: dict, method=1) -> (dict, str):
             price = ''
             for text in ref.find('div', class_='wants-card__header-price wants-card__price m-hidden').find_all('span'):
                 price += str(text.next + ' ')
+            price = str(price).replace(' ', '')
+            price = price[price.find(':') + 1:-1].strip()
+            if not price[0].isdigit() and not price[1].isdigit():
+                price = price[2:]
 
         higher_price = ref.find('div', class_='wants-card__description-higher-price')
         if higher_price is None:
@@ -68,15 +78,19 @@ def parse_kwork(platform: dict, method=1) -> (dict, str):
             higher_price = str(higher_price.next).replace('\t', '')
             for text in ref.find('div', class_='wants-card__description-higher-price').find_all('span'):
                 higher_price += str(text.next).strip() + ' '
-            higher_price = ', ' + higher_price.replace('\n', ' ')
-        price = price.strip() + higher_price.strip().lower()
+            higher_price = str(higher_price).replace('\n', ' ').replace(' ', '')
+            higher_price = higher_price[higher_price.find(':') + 1:-1]
+            if not higher_price[0].isdigit() and not higher_price[1].isdigit():
+                higher_price = higher_price[2:]
+            higher_price = ' - ' + '{:,.0f}'.format(int(higher_price))
+        price = '{:,.0f}'.format(int(price)) + higher_price
         # print(price)
 
         author = ref.find('div', class_='dib')
         if author is None:
             author = ''
         else:
-            author = author.find('a').next
+            author = 'Пользователь ' + author.find('a').next
         # print(author)
 
         resp = ''
@@ -97,6 +111,6 @@ def parse_kwork(platform: dict, method=1) -> (dict, str):
 
 if __name__ == '__main__':
     settings = {"enable": "y", "link": "https://kwork.ru/projects"}
-    dummy = parse_kwork(settings, 0)
+    dummy = parse_kwork(settings, 1)
     if dummy[1]:
         print(dummy[1])
